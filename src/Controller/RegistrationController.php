@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Profile;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Repository\UserRepository;
@@ -36,13 +37,14 @@ class RegistrationController extends AbstractController
             if (!$taken){
 
                 # creer un profile lors création user
+                $user->setProfile(new Profile());
 
                 $manager->persist($user);
                 $manager->flush();
 
                 return $this->json($user, 200);
             } else {
-                return $this->json("username taken", 401);
+                return $this->json("username taken", 401, ['groups'=>"createUser"]);
             }
 
     }

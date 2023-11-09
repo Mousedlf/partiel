@@ -12,15 +12,17 @@ class FriendRequest
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups('show_requests', 'create_user')]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'receivedFriendRequests')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups('show_requests')]
     private ?Profile $ofProfile = null;
 
     #[ORM\ManyToOne(inversedBy: 'sentFriendRequests')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['sentBy'])]
+    #[Groups(['sentBy', 'show_requests', 'show_profiles'])]
     private ?Profile $toProfile = null;
 
     public function getId(): ?int

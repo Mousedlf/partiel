@@ -44,7 +44,7 @@ class RegistrationController extends AbstractController
 
                 return $this->json($user, 200);
             } else {
-                return $this->json("username taken", 401, ['groups'=>"createUser"]);
+                return $this->json("username taken", 401);
             }
 
     }

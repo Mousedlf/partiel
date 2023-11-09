@@ -2,27 +2,27 @@
 
 namespace App\Repository;
 
-use App\Entity\FriendRequest;
+use App\Entity\Friendship;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<FriendRequest>
+ * @extends ServiceEntityRepository<Friendship>
  *
- * @method FriendRequest|null find($id, $lockMode = null, $lockVersion = null)
- * @method FriendRequest|null findOneBy(array $criteria, array $orderBy = null)
- * @method FriendRequest[]    findAll()
- * @method FriendRequest[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Friendship|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Friendship|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Friendship[]    findAll()
+ * @method Friendship[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class FriendRequestRepository extends ServiceEntityRepository
+class FriendshipRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, FriendRequest::class);
+        parent::__construct($registry, Friendship::class);
     }
 
 //    /**
-//     * @return FriendRequest[] Returns an array of FriendRequest objects
+//     * @return Friendship[] Returns an array of Friendship objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -36,7 +36,7 @@ class FriendRequestRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?FriendRequest
+//    public function findOneBySomeField($value): ?Friendship
 //    {
 //        return $this->createQueryBuilder('f')
 //            ->andWhere('f.exampleField = :val')

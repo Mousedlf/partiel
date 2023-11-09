@@ -17,11 +17,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['createUser'])]
+    #[Groups(['createUser', 'show_requests'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['createUser'])]
+    #[Groups(['createUser', 'show_requests', "show_profiles"])]
     private ?string $username = null;
 
     #[ORM\Column]
@@ -36,7 +36,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\OneToOne(mappedBy: 'ofUser', cascade: ['persist', 'remove'])]
-    #[Groups(['createUser'])]
     private ?Profile $profile = null;
 
     public function getId(): ?int

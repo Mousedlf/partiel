@@ -43,6 +43,7 @@ class FriendRequestController extends AbstractController
 
         $request->setOfProfile($sentBy);
         $request->setToProfile($sentTo);
+        $request->setCreatedAt(new \DateTimeImmutable());
 
         $manager->persist($request);
         $manager->flush();
@@ -56,11 +57,15 @@ class FriendRequestController extends AbstractController
         $friendship = new Friendship();
         $friendship->setFriendA($request->getOfProfile());
         $friendship->setFriendB($request->getToProfile());
+        $friendship->setCreatedAt(new \DateTimeImmutable());
+
 
 //        $exists = $friendshipRepository->find lalala
 //        if ($exists){
 //            return $this->json("alredy friends");
 //        }
+
+        # verifier si personne connectée est bien celle à qui on a envoyé la demande
 
         $manager->persist($friendship);
         $manager->remove($request); # demande acceptée donc plus besoin de la garder
@@ -69,7 +74,7 @@ class FriendRequestController extends AbstractController
         return $this->json("friend request accepted", 200 );
     }
 
-    #[Route('/decline/{id}', name: 'accept_friend_request', methods: ['POST'])]
+    #[Route('/decline/{id}', name: 'decline_friend_request', methods: ['POST'])]
     public function declineFriendRequest(FriendRequest $request, EntityManagerInterface $manager): Response
     {
         $manager->remove($request);

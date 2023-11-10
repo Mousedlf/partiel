@@ -25,6 +25,10 @@ class FriendRequest
     #[Groups(['sentBy', 'show_requests', 'show_profiles'])]
     private ?Profile $toProfile = null;
 
+    #[ORM\Column]
+    #[Groups('show_requests')]
+    private ?\DateTimeImmutable $createdAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -50,6 +54,18 @@ class FriendRequest
     public function setToProfile(?Profile $toProfile): static
     {
         $this->toProfile = $toProfile;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
 
         return $this;
     }

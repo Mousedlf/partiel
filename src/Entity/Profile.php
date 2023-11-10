@@ -14,7 +14,7 @@ class Profile
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['sentBy', 'show_requests', "show_profiles"])]
+    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -23,7 +23,7 @@ class Profile
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['show_requests', "show_profiles"])]
+    #[Groups(['show_requests', "show_profiles", "show_friends"])]
     private ?User $ofUser = null;
 
     #[ORM\OneToMany(mappedBy: 'ofProfile', targetEntity: FriendRequest::class)]
@@ -44,10 +44,26 @@ class Profile
     {
         $this->receivedFriendRequests = new ArrayCollection();
         $this->sentFriendRequests = new ArrayCollection();
-        $this->friends = new ArrayCollection();
         $this->relationAsSender = new ArrayCollection();
-        $this->relationB = new ArrayCollection();
         $this->relationAsRecipient = new ArrayCollection();
+    }
+
+    public function getFriendList(){
+        $friendList = [];
+        $currentProfile = $this;
+
+        foreach($currentProfile->relationAsSender as $relation){
+            if($relation->getFriendA() != $currentProfile){
+                $otherPerson = $relation->getFriendA();
+            }elseif($relation->getFriendB() != $currentProfile){
+                $otherPerson = $relation->getFriendB();
+            }
+            $friendList[]= $otherPerson;
+        }
+
+        # foreach pour Recipient
+
+        return $friendList;
     }
 
     public function getId(): ?int

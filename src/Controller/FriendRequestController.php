@@ -19,14 +19,14 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/api/friend')]
 class FriendRequestController extends AbstractController
 {
-    #[Route('/requests', name: 'app_friend_request')]
+    #[Route('/requests', name: 'app_friend_request', methods: ['GET'])]
     public function index(FriendRequestRepository $friendRequestRepository): Response{
 
         return $this->json($friendRequestRepository->findAll(),200,[], ['groups'=> 'show_requests']); # revoir groups dans entités
 
     }
 
-    #[Route('/sendrequest/{id}', name: 'send_friend_request', methods: ['POST'])]
+    #[Route('/sendrequest/{id}', methods: ['POST'])]
     public function sendFriendRequest(Profile $profile, EntityManagerInterface $manager, FriendshipRepository $friendshipRepository): Response
     {
         $request = new FriendRequest();
@@ -37,10 +37,22 @@ class FriendRequestController extends AbstractController
         if ($sentBy == $sentTo) {
             return $this->json("you are sending yourself a friend request", 401);
         }
-//        $exists = $friendshipRepository->find lalala
-//        if($exists) {
-//              return $this->json("alredy friends",401);
-//         }
+
+        # verifier si déja dans liste d'amis
+        foreach($sentBy->getFriendList() as $friend){
+            if($sentTo == $friend) {
+                return $this->json("already friends");
+            }
+        }
+
+        # verifier si demande déja envoyée ?? why so confusing, can't seem to make in work
+        foreach($sentBy->getSentFriendRequests() as $request){
+            if($sentTo == $request->getToProfile()){
+                return $this->json("request already sent");
+            }
+        }
+
+
 
         $request->setOfProfile($sentBy);
         $request->setToProfile($sentTo);
@@ -52,8 +64,8 @@ class FriendRequestController extends AbstractController
         return $this->json("friend request sent", 200 ); # revoir groups dans entités ['groups'=> '']
     }
 
-    #[Route('/accept/{id}', name: 'accept_friend_request', methods: ['POST'])]
-    public function acceptFriendRequest(FriendRequest $request, EntityManagerInterface $manager, FriendshipRepository $friendshipRepository): Response
+    #[Route('/accept/{id}', methods: ['POST'])]
+    public function acceptFriendRequest(FriendRequest $request, EntityManagerInterface $manager): Response
     {
         $friendship = new Friendship();
         $personA = $request->getOfProfile();
@@ -63,13 +75,12 @@ class FriendRequestController extends AbstractController
         $friendship->setFriendB($personB);
         $friendship->setCreatedAt(new \DateTimeImmutable());
 
-
-//        $exists = $friendshipRepository->find lalala
-//        if ($exists){
-//            return $this->json("alredy friends");
-//        }
+        # verifier si déja dans liste d'amis ?
 
         # verifier si personne connectée est bien celle à qui on a envoyé la demande
+        if($request->getToProfile() != $this->getUser()->getProfile()){
+            return $this->json("not yours to accept", 401);
+        }
 
         # creer conversation
         $privateConversation = new PrivateConversation();
@@ -88,10 +99,26 @@ class FriendRequestController extends AbstractController
     public function declineFriendRequest(FriendRequest $request, EntityManagerInterface $manager): Response
     {
         # verifier si personne connectée est bien celle à qui on a envoyé la demande
+        if($request->getToProfile() != $this->getUser()->getProfile()){
+            return $this->json("mind your own business", 401);
+        }
 
         $manager->remove($request);
         $manager->flush();
 
         return $this->json("friend request declined", 200 );
+    }
+
+    #[Route('/retract/{id}', methods: ['POST'])]
+    public function takeBackFriendRequest(FriendRequest $request, EntityManagerInterface $manager): Response
+    {
+        if($request->getOfProfile() != $this->getUser()->getProfile()){
+            return $this->json("mind your own business", 401);
+        }
+
+        $manager->remove($request);
+        $manager->flush();
+
+        return $this->json("it seems something made you change your mind", 200 );
     }
 }

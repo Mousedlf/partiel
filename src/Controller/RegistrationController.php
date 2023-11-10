@@ -42,7 +42,7 @@ class RegistrationController extends AbstractController
                 $manager->persist($user);
                 $manager->flush();
 
-                return $this->json($user, 200);
+                return $this->json("welcome", 200);
             } else {
                 return $this->json("username taken", 401);
             }

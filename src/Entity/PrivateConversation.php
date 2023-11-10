@@ -28,7 +28,7 @@ class PrivateConversation
     private ?Profile $participantB = null;
 
     #[ORM\OneToMany(mappedBy: 'privateConversation', targetEntity: PrivateMessage::class)]
-    #[Groups(['show_privateConversations'])]
+    #[Groups(['show_privateConversationMessages'])]
     private Collection $privateMessages;
 
     public function __construct()

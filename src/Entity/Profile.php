@@ -18,21 +18,23 @@ class Profile
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['sentBy', 'show_requests', "show_profiles", 'show_privateConversations'])]
+    #[Groups(['sentBy', 'show_requests', "show_profiles", 'show_privateConversations', 'show_privateConversationMessages'])]
     private ?string $name = null;
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['show_requests', "show_profiles", "show_friends"])]
+    #[Groups(['show_requests', "show_friends"])]
     private ?User $ofUser = null;
+
 
     # Friend Request
     #[ORM\OneToMany(mappedBy: 'ofProfile', targetEntity: FriendRequest::class)]
-    #[Groups(['sentBy', "show_profiles"])]
+    #[Groups(['sentBy'])]
     private Collection $receivedFriendRequests;
 
     #[ORM\OneToMany(mappedBy: 'toProfile', targetEntity: FriendRequest::class)]
     private Collection $sentFriendRequests;
+
 
     # Friendship
     #[ORM\OneToMany(mappedBy: 'friendA', targetEntity: Friendship::class)]
@@ -41,14 +43,16 @@ class Profile
     #[ORM\OneToMany(mappedBy: 'friendB', targetEntity: Friendship::class)]
     private Collection $relationAsRecipient;
 
+
     # Private Chat
     #[ORM\OneToMany(mappedBy: 'participantA', targetEntity: PrivateConversation::class)]
-    #[Groups("show_profiles")]
+
     private Collection $participantAOfPrivateChat;
 
     #[ORM\OneToMany(mappedBy: 'participantB', targetEntity: PrivateConversation::class)]
     private Collection $participantBOfPrivateChat;
 
+    # Private Messages
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: PrivateMessage::class, orphanRemoval: true)]
     private Collection $sentPrivateMessages;
 
@@ -86,6 +90,14 @@ class Profile
         }
 
         return $friendList;
+    }
+
+    public function getPrivateConversations(){
+        $privateConversations = [];
+        $currentProfile = $this;
+
+
+        return $privateConversations;
     }
 
     public function getId(): ?int

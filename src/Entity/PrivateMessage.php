@@ -18,7 +18,7 @@ class PrivateMessage
 
     #[ORM\ManyToOne(inversedBy: 'sentPrivateMessages')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['show_privateConversations'])]
+    #[Groups(['show_privateConversations','show_privateConversationMessages'])]
     private ?Profile $author = null;
 
     #[ORM\ManyToOne(inversedBy: 'privateMessages')]
@@ -26,11 +26,11 @@ class PrivateMessage
     private ?PrivateConversation $privateConversation = null;
 
     #[ORM\Column]
-    #[Groups(['show_privateConversations'])]
+    #[Groups(['show_privateConversationMessages'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['show_privateConversations'])]
+    #[Groups(['show_privateConversationMessages'])]
     private ?string $content = null;
 
     public function getId(): ?int

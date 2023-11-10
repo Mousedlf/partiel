@@ -14,11 +14,11 @@ class Profile
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends"])]
+    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends",'show_privateConversations'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['sentBy', 'show_requests', "show_profiles"])]
+    #[Groups(['sentBy', 'show_requests', "show_profiles", 'show_privateConversations'])]
     private ?string $name = null;
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
@@ -26,6 +26,7 @@ class Profile
     #[Groups(['show_requests', "show_profiles", "show_friends"])]
     private ?User $ofUser = null;
 
+    # Friend Request
     #[ORM\OneToMany(mappedBy: 'ofProfile', targetEntity: FriendRequest::class)]
     #[Groups(['sentBy', "show_profiles"])]
     private Collection $receivedFriendRequests;
@@ -33,11 +34,23 @@ class Profile
     #[ORM\OneToMany(mappedBy: 'toProfile', targetEntity: FriendRequest::class)]
     private Collection $sentFriendRequests;
 
+    # Friendship
     #[ORM\OneToMany(mappedBy: 'friendA', targetEntity: Friendship::class)]
     private Collection $relationAsSender;
 
     #[ORM\OneToMany(mappedBy: 'friendB', targetEntity: Friendship::class)]
     private Collection $relationAsRecipient;
+
+    # Private Chat
+    #[ORM\OneToMany(mappedBy: 'participantA', targetEntity: PrivateConversation::class)]
+    #[Groups("show_profiles")]
+    private Collection $participantAOfPrivateChat;
+
+    #[ORM\OneToMany(mappedBy: 'participantB', targetEntity: PrivateConversation::class)]
+    private Collection $participantBOfPrivateChat;
+
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: PrivateMessage::class, orphanRemoval: true)]
+    private Collection $sentPrivateMessages;
 
 
     public function __construct()
@@ -46,6 +59,9 @@ class Profile
         $this->sentFriendRequests = new ArrayCollection();
         $this->relationAsSender = new ArrayCollection();
         $this->relationAsRecipient = new ArrayCollection();
+        $this->participantAOfPrivateChat = new ArrayCollection();
+        $this->participantBOfPrivateChat = new ArrayCollection();
+        $this->sentPrivateMessages = new ArrayCollection();
     }
 
     public function getFriendList(){
@@ -60,8 +76,14 @@ class Profile
             }
             $friendList[]= $otherPerson;
         }
-
-        # foreach pour Recipient
+        foreach($currentProfile->relationAsRecipient as $relation){
+            if($relation->getFriendA() != $currentProfile){
+                $otherPerson = $relation->getFriendA();
+            }elseif($relation->getFriendB() != $currentProfile){
+                $otherPerson = $relation->getFriendB();
+            }
+            $friendList[]= $otherPerson;
+        }
 
         return $friendList;
     }
@@ -209,6 +231,96 @@ class Profile
             // set the owning side to null (unless already changed)
             if ($relationAsRecipient->getFriendB() === $this) {
                 $relationAsRecipient->setFriendB(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PrivateConversation>
+     */
+    public function getParticipantAOfPrivateChat(): Collection
+    {
+        return $this->participantAOfPrivateChat;
+    }
+
+    public function addParticipantAOfPrivateChat(PrivateConversation $participantAOfPrivateChat): static
+    {
+        if (!$this->participantAOfPrivateChat->contains($participantAOfPrivateChat)) {
+            $this->participantAOfPrivateChat->add($participantAOfPrivateChat);
+            $participantAOfPrivateChat->setParticipantA($this);
+        }
+
+        return $this;
+    }
+
+    public function removeParticipantAOfPrivateChat(PrivateConversation $participantAOfPrivateChat): static
+    {
+        if ($this->participantAOfPrivateChat->removeElement($participantAOfPrivateChat)) {
+            // set the owning side to null (unless already changed)
+            if ($participantAOfPrivateChat->getParticipantA() === $this) {
+                $participantAOfPrivateChat->setParticipantA(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PrivateConversation>
+     */
+    public function getParticipantBOfPrivateChat(): Collection
+    {
+        return $this->participantBOfPrivateChat;
+    }
+
+    public function addParticipantBOfPrivateChat(PrivateConversation $participantBOfPrivateChat): static
+    {
+        if (!$this->participantBOfPrivateChat->contains($participantBOfPrivateChat)) {
+            $this->participantBOfPrivateChat->add($participantBOfPrivateChat);
+            $participantBOfPrivateChat->setParticipantB($this);
+        }
+
+        return $this;
+    }
+
+    public function removeParticipantBOfPrivateChat(PrivateConversation $participantBOfPrivateChat): static
+    {
+        if ($this->participantBOfPrivateChat->removeElement($participantBOfPrivateChat)) {
+            // set the owning side to null (unless already changed)
+            if ($participantBOfPrivateChat->getParticipantB() === $this) {
+                $participantBOfPrivateChat->setParticipantB(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PrivateMessage>
+     */
+    public function getSentPrivateMessages(): Collection
+    {
+        return $this->sentPrivateMessages;
+    }
+
+    public function addSentPrivateMessage(PrivateMessage $sentPrivateMessage): static
+    {
+        if (!$this->sentPrivateMessages->contains($sentPrivateMessage)) {
+            $this->sentPrivateMessages->add($sentPrivateMessage);
+            $sentPrivateMessage->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSentPrivateMessage(PrivateMessage $sentPrivateMessage): static
+    {
+        if ($this->sentPrivateMessages->removeElement($sentPrivateMessage)) {
+            // set the owning side to null (unless already changed)
+            if ($sentPrivateMessage->getAuthor() === $this) {
+                $sentPrivateMessage->setAuthor(null);
             }
         }
 

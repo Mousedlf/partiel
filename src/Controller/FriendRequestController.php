@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\FriendRequest;
 use App\Entity\Friendship;
+use App\Entity\PrivateConversation;
 use App\Entity\Profile;
 use App\Repository\FriendRequestRepository;
 use App\Repository\FriendshipRepository;
@@ -55,8 +56,11 @@ class FriendRequestController extends AbstractController
     public function acceptFriendRequest(FriendRequest $request, EntityManagerInterface $manager, FriendshipRepository $friendshipRepository): Response
     {
         $friendship = new Friendship();
-        $friendship->setFriendA($request->getOfProfile());
-        $friendship->setFriendB($request->getToProfile());
+        $personA = $request->getOfProfile();
+        $personB = $request->getToProfile();
+
+        $friendship->setFriendA($personA);
+        $friendship->setFriendB($personB);
         $friendship->setCreatedAt(new \DateTimeImmutable());
 
 
@@ -67,16 +71,24 @@ class FriendRequestController extends AbstractController
 
         # verifier si personne connectée est bien celle à qui on a envoyé la demande
 
+        # creer conversation
+        $privateConversation = new PrivateConversation();
+        $privateConversation->setParticipantA($personA);
+        $privateConversation->setParticipantB($personB);
+
         $manager->persist($friendship);
+        $manager->persist($privateConversation);
         $manager->remove($request); # demande acceptée donc plus besoin de la garder
         $manager->flush();
 
-        return $this->json("friend request accepted", 200 );
+        return $this->json("friend request accepted", 200,);
     }
 
     #[Route('/decline/{id}', name: 'decline_friend_request', methods: ['POST'])]
     public function declineFriendRequest(FriendRequest $request, EntityManagerInterface $manager): Response
     {
+        # verifier si personne connectée est bien celle à qui on a envoyé la demande
+
         $manager->remove($request);
         $manager->flush();
 

@@ -36,8 +36,9 @@ class FriendRequestController extends AbstractController
         if ($sentBy == $sentTo) {
             return $this->json("you are sending yourself a friend request", 401);
         }
-//        if() deja amis alors pas envoyer{
-//              return $this->json("alredy friends")
+//        $exists = $friendshipRepository->find lalala
+//        if($exists) {
+//              return $this->json("alredy friends",401);
 //         }
 
         $request->setOfProfile($sentBy);
@@ -66,5 +67,14 @@ class FriendRequestController extends AbstractController
         $manager->flush();
 
         return $this->json("friend request accepted", 200 );
+    }
+
+    #[Route('/decline/{id}', name: 'accept_friend_request', methods: ['POST'])]
+    public function declineFriendRequest(FriendRequest $request, EntityManagerInterface $manager): Response
+    {
+        $manager->remove($request);
+        $manager->flush();
+
+        return $this->json("friend request declined", 200 );
     }
 }

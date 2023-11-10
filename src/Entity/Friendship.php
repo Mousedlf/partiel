@@ -13,11 +13,11 @@ class Friendship
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'relationA')]
+    #[ORM\ManyToOne(inversedBy: 'relationAsSender')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Profile $friendA = null;
 
-    #[ORM\ManyToOne(inversedBy: 'relationB')]
+    #[ORM\ManyToOne(inversedBy: 'relationAsRecipient')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Profile $friendB = null;
 
@@ -49,4 +49,6 @@ class Friendship
 
         return $this;
     }
+
+
 }

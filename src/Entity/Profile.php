@@ -34,10 +34,10 @@ class Profile
     private Collection $sentFriendRequests;
 
     #[ORM\OneToMany(mappedBy: 'friendA', targetEntity: Friendship::class)]
-    private Collection $relationA;
+    private Collection $relationAsSender;
 
     #[ORM\OneToMany(mappedBy: 'friendB', targetEntity: Friendship::class)]
-    private Collection $relationB;
+    private Collection $relationAsRecipient;
 
 
     public function __construct()
@@ -45,8 +45,9 @@ class Profile
         $this->receivedFriendRequests = new ArrayCollection();
         $this->sentFriendRequests = new ArrayCollection();
         $this->friends = new ArrayCollection();
-        $this->relationA = new ArrayCollection();
+        $this->relationAsSender = new ArrayCollection();
         $this->relationB = new ArrayCollection();
+        $this->relationAsRecipient = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -138,32 +139,30 @@ class Profile
         return $this;
     }
 
-
-
     /**
      * @return Collection<int, Friendship>
      */
-    public function getRelationA(): Collection
+    public function getRelationAsSender(): Collection
     {
-        return $this->relationA;
+        return $this->relationAsSender;
     }
 
-    public function addRelationA(Friendship $relationA): static
+    public function addRelationAsSender(Friendship $relationAsSender): static
     {
-        if (!$this->relationA->contains($relationA)) {
-            $this->relationA->add($relationA);
-            $relationA->setFriendA($this);
+        if (!$this->relationAsSender->contains($relationAsSender)) {
+            $this->relationAsSender->add($relationAsSender);
+            $relationAsSender->setFriendA($this);
         }
 
         return $this;
     }
 
-    public function removeRelationA(Friendship $relationA): static
+    public function removeRelationAsSender(Friendship $relationAsSender): static
     {
-        if ($this->relationA->removeElement($relationA)) {
+        if ($this->relationAsSender->removeElement($relationAsSender)) {
             // set the owning side to null (unless already changed)
-            if ($relationA->getFriendA() === $this) {
-                $relationA->setFriendA(null);
+            if ($relationAsSender->getFriendA() === $this) {
+                $relationAsSender->setFriendA(null);
             }
         }
 
@@ -173,30 +172,34 @@ class Profile
     /**
      * @return Collection<int, Friendship>
      */
-    public function getRelationB(): Collection
+    public function getRelationAsRecipient(): Collection
     {
-        return $this->relationB;
+        return $this->relationAsRecipient;
     }
 
-    public function addRelationB(Friendship $relationB): static
+    public function addRelationAsRecipient(Friendship $relationAsRecipient): static
     {
-        if (!$this->relationB->contains($relationB)) {
-            $this->relationB->add($relationB);
-            $relationB->setFriendB($this);
+        if (!$this->relationAsRecipient->contains($relationAsRecipient)) {
+            $this->relationAsRecipient->add($relationAsRecipient);
+            $relationAsRecipient->setFriendB($this);
         }
 
         return $this;
     }
 
-    public function removeRelationB(Friendship $relationB): static
+    public function removeRelationAsRecipient(Friendship $relationAsRecipient): static
     {
-        if ($this->relationB->removeElement($relationB)) {
+        if ($this->relationAsRecipient->removeElement($relationAsRecipient)) {
             // set the owning side to null (unless already changed)
-            if ($relationB->getFriendB() === $this) {
-                $relationB->setFriendB(null);
+            if ($relationAsRecipient->getFriendB() === $this) {
+                $relationAsRecipient->setFriendB(null);
             }
         }
 
         return $this;
     }
+
+
+
+
 }

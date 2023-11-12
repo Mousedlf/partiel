@@ -13,7 +13,7 @@ class PrivateMessage
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['show_privateConversations'])]
+    #[Groups(['show_privateConversations','show_privateConversationMessages'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'sentPrivateMessages')]

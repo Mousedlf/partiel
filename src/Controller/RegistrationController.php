@@ -32,12 +32,16 @@ class RegistrationController extends AbstractController
                 $user->getPassword()
             )
         );
+        $user->setCreatedAt(new \DateTimeImmutable());
 
         $taken = $userRepository->findOneBy(['username'=> $user->getUsername()]);
             if (!$taken){
 
-                # creer un profile lors création user
+                # creer un profile lors création user et mettre par default name = username
                 $user->setProfile(new Profile());
+                $profile = $user->getProfile();
+                $profile->setUsername($user->getUsername());
+                $profile->setPublic(true);
 
                 $manager->persist($user);
                 $manager->flush();

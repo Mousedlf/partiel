@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ProfileRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -14,16 +15,15 @@ class Profile
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends",'show_privateConversations'])]
+    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends",'show_privateConversations', 'show_receivedrequests'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['sentBy', 'show_requests', "show_profiles", 'show_privateConversations', 'show_privateConversationMessages'])]
-    private ?string $name = null;
+    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends", 'show_privateConversations', 'show_privateConversationMessages',"show_receivedRequests"])]
+    private ?string $username = null;
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['show_requests', "show_friends"])]
     private ?User $ofUser = null;
 
 
@@ -55,6 +55,16 @@ class Profile
     # Private Messages
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: PrivateMessage::class, orphanRemoval: true)]
     private Collection $sentPrivateMessages;
+
+    #[ORM\Column]
+    #[Groups(['show_profiles'])]
+    private ?bool $public = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $firstName = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $lastName = null;
 
 
     public function __construct()
@@ -96,6 +106,7 @@ class Profile
         $privateConversations = [];
         $currentProfile = $this;
 
+        // lalala
 
         return $privateConversations;
     }
@@ -105,14 +116,14 @@ class Profile
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getUsername(): ?string
     {
-        return $this->name;
+        return $this->username;
     }
 
-    public function setName(?string $name): static
+    public function setUsername(?string $username): static
     {
-        $this->name = $name;
+        $this->username = $username;
 
         return $this;
     }
@@ -335,6 +346,42 @@ class Profile
                 $sentPrivateMessage->setAuthor(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isPublic(): ?bool
+    {
+        return $this->public;
+    }
+
+    public function setPublic(bool $public): static
+    {
+        $this->public = $public;
+
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(?string $firstName): static
+    {
+        $this->firstName = $firstName;
+
+        return $this;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(?string $lastName): static
+    {
+        $this->lastName = $lastName;
 
         return $this;
     }

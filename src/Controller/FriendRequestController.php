@@ -26,6 +26,15 @@ class FriendRequestController extends AbstractController
 
     }
 
+    #[Route('/receivedrequests/{id}', methods: ['GET'])]
+    public function indexMyReceivedRequests(Profile $profile): Response
+    {
+        $requests = $profile->getReceivedFriendRequests(); # fair
+
+        return $this->json($requests,200, [],["groups"=>"show_receivedRequests"]);
+
+    }
+
     #[Route('/sendrequest/{id}', methods: ['POST'])]
     public function sendFriendRequest(Profile $profile, EntityManagerInterface $manager, FriendshipRepository $friendshipRepository): Response
     {

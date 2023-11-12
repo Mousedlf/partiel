@@ -12,12 +12,12 @@ class FriendRequest
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups('show_requests', 'create_user')]
+    #[Groups(['show_requests', 'create_user',"show_receivedRequests"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'receivedFriendRequests')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups('show_requests')]
+    #[Groups(['show_requests',"show_receivedRequests"])]
     private ?Profile $ofProfile = null;
 
     #[ORM\ManyToOne(inversedBy: 'sentFriendRequests')]

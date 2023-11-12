@@ -22,7 +22,8 @@ class PrivateConversationController extends AbstractController
     #[Route('s/ofmine/{id}',  methods:['GET'])]
     public function indexAllMyConversations(Profile $profile): Response
     {
-        $conversations = "pour le moment pas grand chose";
+        $conversations = "faut encore ajouter la methode getPrivateConversations dans le profile";
+        // $profile->getPrivateConversations();
 
         return $this->json($conversations, 200, [],['groups'=>'show_MyPrivateConversations'] );
     }

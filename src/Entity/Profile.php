@@ -66,6 +66,16 @@ class Profile
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $lastName = null;
 
+    #[ORM\OneToMany(mappedBy: 'createdBy', targetEntity: GroupConversation::class)]
+    private Collection $createdPublicConversations;
+
+    #[ORM\OneToMany(mappedBy: 'admin', targetEntity: GroupConversation::class)]
+    private Collection $adminPublicConversations;
+
+    #[ORM\ManyToMany(targetEntity: GroupConversation::class, mappedBy: 'members')]
+    private Collection $groupConversations;
+
+
 
     public function __construct()
     {
@@ -76,6 +86,10 @@ class Profile
         $this->participantAOfPrivateChat = new ArrayCollection();
         $this->participantBOfPrivateChat = new ArrayCollection();
         $this->sentPrivateMessages = new ArrayCollection();
+        $this->createdPublicConversations = new ArrayCollection();
+        $this->adminPublicConversation = new ArrayCollection();
+        $this->publicConversations = new ArrayCollection();
+        $this->groupConversations = new ArrayCollection();
     }
 
     public function getFriendList(){
@@ -385,6 +399,95 @@ class Profile
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, GroupConversation>
+     */
+    public function getCreatedPublicConversations(): Collection
+    {
+        return $this->createdPublicConversations;
+    }
+
+    public function addCreatedPublicConversation(GroupConversation $createdPublicConversation): static
+    {
+        if (!$this->createdPublicConversations->contains($createdPublicConversation)) {
+            $this->createdPublicConversations->add($createdPublicConversation);
+            $createdPublicConversation->setCreatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCreatedPublicConversation(GroupConversation $createdPublicConversation): static
+    {
+        if ($this->createdPublicConversations->removeElement($createdPublicConversation)) {
+            // set the owning side to null (unless already changed)
+            if ($createdPublicConversation->getCreatedBy() === $this) {
+                $createdPublicConversation->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, GroupConversation>
+     */
+    public function getAdminPublicConversations(): Collection
+    {
+        return $this->adminPublicConversation;
+    }
+
+    public function addAdminPublicConversation(GroupConversation $adminPublicConversation): static
+    {
+        if (!$this->adminPublicConversation->contains($adminPublicConversation)) {
+            $this->adminPublicConversation->add($adminPublicConversation);
+            $adminPublicConversation->setAdmin($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAdminPublicConversation(GroupConversation $adminPublicConversation): static
+    {
+        if ($this->adminPublicConversation->removeElement($adminPublicConversation)) {
+            // set the owning side to null (unless already changed)
+            if ($adminPublicConversation->getAdmin() === $this) {
+                $adminPublicConversation->setAdmin(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, GroupConversation>
+     */
+    public function getGroupConversations(): Collection
+    {
+        return $this->groupConversations;
+    }
+
+    public function addGroupConversation(GroupConversation $groupConversation): static
+    {
+        if (!$this->groupConversations->contains($groupConversation)) {
+            $this->groupConversations->add($groupConversation);
+            $groupConversation->addMember($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGroupConversation(GroupConversation $groupConversation): static
+    {
+        if ($this->groupConversations->removeElement($groupConversation)) {
+            $groupConversation->removeMember($this);
+        }
+
+        return $this;
+    }
+
+
 
 
 

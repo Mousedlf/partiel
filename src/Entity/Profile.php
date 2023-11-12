@@ -15,11 +15,11 @@ class Profile
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends",'show_privateConversations', 'show_receivedrequests'])]
+    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends",'show_privateConversations', 'show_receivedrequests', 'show_groupConv'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends", 'show_privateConversations', 'show_privateConversationMessages',"show_receivedRequests"])]
+    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends", 'show_privateConversations', 'show_privateConversationMessages',"show_receivedRequests", 'show_groupConv'])]
     private ?string $username = null;
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]

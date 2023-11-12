@@ -6,6 +6,7 @@ use App\Repository\GroupConversationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: GroupConversationRepository::class)]
 class GroupConversation
@@ -13,17 +14,21 @@ class GroupConversation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['show_groupConv'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'createdPublicConversations')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['show_groupConv'])]
     private ?Profile $createdBy = null;
 
     #[ORM\ManyToOne(inversedBy: 'adminPublicConversations')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['show_groupConv'])]
     private ?Profile $admin = null;
 
     #[ORM\ManyToMany(targetEntity: Profile::class, inversedBy: 'groupConversations')]
+    #[Groups(['show_groupConv'])]
     private Collection $members;
 
     public function __construct()

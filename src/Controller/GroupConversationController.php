@@ -4,22 +4,24 @@ namespace App\Controller;
 
 use App\Entity\GroupConversation;
 use App\Repository\GroupConversationRepository;
+use App\Repository\ProfileRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/api/ public/conversation')]
+#[Route('/api/group/conversation')]
 class GroupConversationController extends AbstractController
 {
     #[Route('s', methods:['GET'])]
     public function index(GroupConversationRepository $repository): Response
     {
-        return $this->json($repository->findAll(), 200, [],['groups'=>'']);
+        return $this->json($repository->findAll(), 200, [],['groups'=>'show_groupConv']);
     }
 
     #[Route('/new', methods:['POST'])]
-    public function createPublicConversation(EntityManagerInterface $manager): Response
+    public function createPublicConversation(EntityManagerInterface $manager,Request $request, ProfileRepository $profileRepository): Response
     {
         $conversation = new GroupConversation();
 
@@ -27,19 +29,51 @@ class GroupConversationController extends AbstractController
         $conversation->setAdmin($this->getUser()->getProfile());
         $conversation->addMember($this->getUser()->getProfile());
 
-        # requete avec key "member" et value "username" ou id ?
-        # verif si personne existe
-        # verifier si dans liste amis $profile->getFriendList();
-        # ajout profile $conversation->addMember();
+        # requete || "members": ['1','2','5']
+        $content = $request->getContent();
+        $params = json_decode($content, true); # parameters as array
+        foreach($params["members"] as $potentialProfileId){
 
-        # ajout min 2 personnes
-        if($conversation->getMembers() <3){
-            return $this->json("two or more friends need to be added to create a group, otherwise it's a normal conversation genius");
+            if($$potentialProfileId == $this->getUser()->getProfile()->getId()){
+                return $this->json("you are automatically included in the group", 401);
+            }
+
+            $profile = $profileRepository->findOneBy(['id'=>$potentialProfileId]);
+            if(!$profile){
+                return $this->json("you are trying to add someone who does not exist", 401);
+            }
+
+            $friends = $this->getUser()->getProfile()->getFriendList();
+                foreach($friends as $friend){
+                    if($profile = $friend){
+                        $conversation->addMember($profile);
+                    }else{
+                        return $this->json("you are trying to add someone who is not your friend", 401);
+                    }
+                }
+            }
+
+        if(count($conversation->getMembers()) < 2){
+            return $this->json("two or more friends need to be added to create a group, otherwise it is a normal conversation genius");
         }
 
         $manager->persist($conversation);
         $manager->flush();
 
-        return $this->json($conversation, 200, [],['groups'=>'']);
+        return $this->json("new group created", 200);
     }
+
+    #[Route('/delete/{id}', methods:['DELETE'])]
+    public function deleteGroupChat(GroupConversation $conversation, EntityManagerInterface $manager): Response
+    {
+        if($this->getUser()->getProfile() !== $conversation->getAdmin()){
+            return $this->json("you are not the admin, you can not delete the group. Just leave", 401);
+        }
+
+        $manager->remove($conversation);
+        $manager->flush();
+
+        return $this->json("group chat went 'pouf'", 200);
+    }
+
 }

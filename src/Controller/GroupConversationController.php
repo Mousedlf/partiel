@@ -21,7 +21,7 @@ class GroupConversationController extends AbstractController
     }
 
     #[Route('/new', methods:['POST'])]
-    public function createPublicConversation(EntityManagerInterface $manager,Request $request, ProfileRepository $profileRepository): Response
+    public function createGroup(EntityManagerInterface $manager,Request $request, ProfileRepository $profileRepository): Response
     {
         $conversation = new GroupConversation();
 
@@ -64,7 +64,7 @@ class GroupConversationController extends AbstractController
     }
 
     #[Route('/delete/{id}', methods:['DELETE'])]
-    public function deleteGroupChat(GroupConversation $conversation, EntityManagerInterface $manager): Response
+    public function deleteGroup(GroupConversation $conversation, EntityManagerInterface $manager): Response
     {
         if($this->getUser()->getProfile() !== $conversation->getAdmin()){
             return $this->json("you are not the admin, you can not delete the group. Just leave", 401);
@@ -73,7 +73,26 @@ class GroupConversationController extends AbstractController
         $manager->remove($conversation);
         $manager->flush();
 
-        return $this->json("group chat went 'pouf'", 200);
+        return $this->json("group chat went *pouf*", 200);
+    }
+
+    #[Route('/leave/{id}', methods:['POST'])]
+    public function leaveGroup(GroupConversation $conversation, EntityManagerInterface $manager): Response
+    {
+
+        # si l'admin quitte faire qqchose
+
+        foreach ($conversation->getMembers() as $member){
+
+            if($this->getUser()->getProfile() == $member){
+                $conversation->removeMember($this->getUser()->getProfile());
+                $manager->flush();
+                return $this->json("you went *pouf*", 200);
+
+            }
+            return $this->json("why are you trying to leave a group you are not part of to begin with ?", 401);
+        }
+
     }
 
 }

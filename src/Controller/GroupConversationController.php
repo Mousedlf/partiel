@@ -3,9 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\GroupConversation;
+use App\Entity\GroupMessage;
+use App\Entity\Profile;
 use App\Repository\GroupConversationRepository;
 use App\Repository\ProfileRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -92,7 +95,28 @@ class GroupConversationController extends AbstractController
             }
             return $this->json("why are you trying to leave a group you are not part of to begin with ?", 401);
         }
+    }
 
+    #[Route('/{convId}/add/{profileId}', methods:['POST'])]
+    public function addToGroup(
+        #[MapEntity(id: 'convId')] GroupConversation $conversation,
+        #[MapEntity(id: 'profileId')] Profile $profile,
+        EntityManagerInterface $manager, Request $request): Response
+    {
+        if($this->getUser()->getProfile() !== $conversation->getAdmin()){
+            return $this->json("you can not add people to this group. You are not privileged. sad", 401);
+        }
+
+        $friends = $this->getUser()->getProfile()->getFriendList();
+        foreach($friends as $friend){
+
+            if($profile = $friend){
+                $conversation->addMember($profile);
+                return $this->json("friend added to group", 200);
+            }
+            return $this->json("you are trying to add someone who is not your friend", 401);
+
+        }
     }
 
 }

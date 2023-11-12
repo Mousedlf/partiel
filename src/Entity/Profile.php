@@ -75,6 +75,9 @@ class Profile
     #[ORM\ManyToMany(targetEntity: GroupConversation::class, mappedBy: 'members')]
     private Collection $groupConversations;
 
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: GroupMessage::class)]
+    private Collection $groupMessages;
+
 
 
     public function __construct()
@@ -90,6 +93,7 @@ class Profile
         $this->adminPublicConversation = new ArrayCollection();
         $this->publicConversations = new ArrayCollection();
         $this->groupConversations = new ArrayCollection();
+        $this->groupMessages = new ArrayCollection();
     }
 
     public function getFriendList(){
@@ -482,6 +486,36 @@ class Profile
     {
         if ($this->groupConversations->removeElement($groupConversation)) {
             $groupConversation->removeMember($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, GroupMessage>
+     */
+    public function getGroupMessages(): Collection
+    {
+        return $this->groupMessages;
+    }
+
+    public function addGroupMessage(GroupMessage $groupMessage): static
+    {
+        if (!$this->groupMessages->contains($groupMessage)) {
+            $this->groupMessages->add($groupMessage);
+            $groupMessage->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGroupMessage(GroupMessage $groupMessage): static
+    {
+        if ($this->groupMessages->removeElement($groupMessage)) {
+            // set the owning side to null (unless already changed)
+            if ($groupMessage->getAuthor() === $this) {
+                $groupMessage->setAuthor(null);
+            }
         }
 
         return $this;

@@ -24,6 +24,10 @@ class GroupMessage
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\ManyToOne(inversedBy: 'messages')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?GroupConversation $conversation = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -61,6 +65,18 @@ class GroupMessage
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getConversation(): ?GroupConversation
+    {
+        return $this->conversation;
+    }
+
+    public function setConversation(?GroupConversation $conversation): static
+    {
+        $this->conversation = $conversation;
 
         return $this;
     }

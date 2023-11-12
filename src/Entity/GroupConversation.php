@@ -31,9 +31,13 @@ class GroupConversation
     #[Groups(['show_groupConv'])]
     private Collection $members;
 
+    #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: GroupMessage::class)]
+    private Collection $messages;
+
     public function __construct()
     {
         $this->members = new ArrayCollection();
+        $this->messages = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -85,6 +89,36 @@ class GroupConversation
     public function removeMember(Profile $member): static
     {
         $this->members->removeElement($member);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, GroupMessage>
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
+    public function addMessage(GroupMessage $message): static
+    {
+        if (!$this->messages->contains($message)) {
+            $this->messages->add($message);
+            $message->setConversation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessage(GroupMessage $message): static
+    {
+        if ($this->messages->removeElement($message)) {
+            // set the owning side to null (unless already changed)
+            if ($message->getConversation() === $this) {
+                $message->setConversation(null);
+            }
+        }
 
         return $this;
     }

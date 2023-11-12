@@ -31,9 +31,14 @@ class PrivateConversationController extends AbstractController
     #[Route('/{id}',  methods:['GET'])]
     public function indexAllMessagesOfConversation(PrivateConversation $privateConversation): Response
     {
-        # show only if you are part of the conversation
+        $current = $this->getUser()->getProfile();
+        if($current == $privateConversation->getParticipantA() or $current == $privateConversation->getParticipantB()){
+            $messages = $privateConversation->getPrivateMessages();
+            return $this->json($messages, 200, [],['groups'=>'show_privateConversationMessages'] );
+        }
+        return $this->json("mind your own business", 401);
 
-        $messages = $privateConversation->getPrivateMessages();
-        return $this->json($messages, 200, [],['groups'=>'show_privateConversationMessages'] );
+        // pas testé
+
     }
 }

@@ -16,7 +16,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route('/api/private')]
 class PrivateMessageController extends AbstractController
 {
-    #[Route('/message/in/{id}', name: 'new_private_message', methods:['POST'])]
+    #[Route('/message/in/{id}', methods:['POST'])]
     public function newMessage(Request $request, SerializerInterface $serializer, EntityManagerInterface $manager, PrivateConversation $privateConversation): Response
     {
         $json = $request->getContent();
@@ -45,7 +45,6 @@ class PrivateMessageController extends AbstractController
             return $this->json("trying to remove something that isn't there genius", 401);
         }
 
-        # verif si bien auteur du message
         if($message->getAuthor() != $this->getUser()->getProfile()){
             return $this->json("not yours to delete", 401);
         }
@@ -64,7 +63,6 @@ class PrivateMessageController extends AbstractController
     {
         # verif si message et conv existe
 
-        # verif si bien auteur du message
         if($message->getAuthor() != $this->getUser()->getProfile()){
             return $this->json("not yours to change", 401);
         }

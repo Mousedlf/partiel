@@ -23,6 +23,19 @@ class GroupConversationController extends AbstractController
         return $this->json($repository->findAll(), 200, [],['groups'=>'show_groupConv']);
     }
 
+    #[Route('/{id}', methods:['GET'])]
+    public function indexAllMessages(GroupConversation $groupConversation): Response
+    {
+        foreach ($groupConversation->getMembers() as $member){
+            if($this->getUser()->getProfile() == $member){
+                $messages = $groupConversation->getMessages();
+                return $this->json($messages, 200,[],['groups'=>'show_privateConvMsgs']);
+            }
+        }
+
+        return $this->json("you are not part of the group, sad", 401);
+    }
+
     #[Route('/new', methods:['POST'])]
     public function createGroup(EntityManagerInterface $manager,Request $request, ProfileRepository $profileRepository): Response
     {
@@ -84,6 +97,7 @@ class GroupConversationController extends AbstractController
     {
 
         # si l'admin quitte faire qqchose
+        # $conversation->setAdmin() ; quelle personne? automatiquement 2e personne a avoir rejoint?
 
         foreach ($conversation->getMembers() as $member){
 
@@ -101,19 +115,32 @@ class GroupConversationController extends AbstractController
     public function addToGroup(
         #[MapEntity(id: 'convId')] GroupConversation $conversation,
         #[MapEntity(id: 'profileId')] Profile $profile,
-        EntityManagerInterface $manager, Request $request): Response
+        EntityManagerInterface $manager): Response
     {
-        if($this->getUser()->getProfile() !== $conversation->getAdmin()){
-            return $this->json("you can not add people to this group. You are not privileged. sad", 401);
-        }
+        $currentUser = $this->getUser()->getProfile();
+        if($currentUser !== $conversation->getAdmin()){
+            return $this->json("you can not add people to this group. You are not privileged. sad", 401);}
+        if($profile == $currentUser){
+            return $this->json("you are already in the group genius", 401);}
 
-        $friends = $this->getUser()->getProfile()->getFriendList();
+        $friends = $currentUser->getFriendList();
         foreach($friends as $friend){
 
-            if($profile = $friend){
+            if($profile == $friend){
+
+                foreach($conversation->getMembers() as $member){     //ici truc qui cloche
+                    if($member == $friend){
+                        return $this->json("friend already in group", 401);
+                    }
+                }
+
                 $conversation->addMember($profile);
-                return $this->json("friend added to group", 200);
+                $manager->persist($conversation);
+                $manager->flush();
+
+                return $this->json("friend added to group", 200); // FONCTIONNE PAS, message affiché mais personne pas ajoutée
             }
+
             return $this->json("you are trying to add someone who is not your friend", 401);
 
         }

@@ -38,7 +38,5 @@ class PrivateConversationController extends AbstractController
         }
         return $this->json("mind your own business", 401);
 
-        // pas testé
-
     }
 }

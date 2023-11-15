@@ -33,7 +33,7 @@ class PrivateMessageController extends AbstractController
         return $this->json("message sent", 200);
     }
 
-    #[Route('/in/{convId}/delete/{messageId}', methods:['DELETE'])]
+    #[Route('/{convId}/delete/{messageId}', methods:['DELETE'])]
     public function deleteMessage(
         #[MapEntity(id: 'convId')] PrivateConversation $privateConversation,
         #[MapEntity(id: 'messageId')] PrivateMessage $message,
@@ -55,7 +55,7 @@ class PrivateMessageController extends AbstractController
         return $this->json("message deleted", 200);
     }
 
-    #[Route('/in/{convId}/edit/{messageId}', methods:['PUT'])]
+    #[Route('/{convId}/edit/{messageId}', methods:['PUT'])]
     public function editMessage(
         #[MapEntity(id: 'convId')] PrivateConversation $privateConversation,
         #[MapEntity(id: 'messageId')] PrivateMessage $message,

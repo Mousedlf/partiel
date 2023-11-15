@@ -19,7 +19,7 @@ class Profile
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['sentBy', 'show_requests', "show_profiles", "show_friends", 'show_privateConversations', 'show_privateConversationMessages',"show_receivedRequests", 'show_groupConv'])]
+    #[Groups(['sentBy','show_privateConvMsgs', 'show_requests', "show_profiles", "show_friends", 'show_privateConversations', 'show_privateConversationMessages',"show_receivedRequests", 'show_groupConv'])]
     private ?string $username = null;
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
@@ -69,14 +69,15 @@ class Profile
     #[ORM\OneToMany(mappedBy: 'createdBy', targetEntity: GroupConversation::class)]
     private Collection $createdPublicConversations;
 
-    #[ORM\OneToMany(mappedBy: 'admin', targetEntity: GroupConversation::class)]
-    private Collection $adminPublicConversations;
 
     #[ORM\ManyToMany(targetEntity: GroupConversation::class, mappedBy: 'members')]
     private Collection $groupConversations;
 
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: GroupMessage::class)]
     private Collection $groupMessages;
+
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: GroupMessageResponse::class)]
+    private Collection $groupMessageResponses;
 
 
 
@@ -90,10 +91,10 @@ class Profile
         $this->participantBOfPrivateChat = new ArrayCollection();
         $this->sentPrivateMessages = new ArrayCollection();
         $this->createdPublicConversations = new ArrayCollection();
-        $this->adminPublicConversation = new ArrayCollection();
         $this->publicConversations = new ArrayCollection();
         $this->groupConversations = new ArrayCollection();
         $this->groupMessages = new ArrayCollection();
+        $this->groupMessageResponses = new ArrayCollection();
     }
 
     public function getFriendList(){
@@ -434,35 +435,7 @@ class Profile
         return $this;
     }
 
-    /**
-     * @return Collection<int, GroupConversation>
-     */
-    public function getAdminPublicConversations(): Collection
-    {
-        return $this->adminPublicConversation;
-    }
 
-    public function addAdminPublicConversation(GroupConversation $adminPublicConversation): static
-    {
-        if (!$this->adminPublicConversation->contains($adminPublicConversation)) {
-            $this->adminPublicConversation->add($adminPublicConversation);
-            $adminPublicConversation->setAdmin($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAdminPublicConversation(GroupConversation $adminPublicConversation): static
-    {
-        if ($this->adminPublicConversation->removeElement($adminPublicConversation)) {
-            // set the owning side to null (unless already changed)
-            if ($adminPublicConversation->getAdmin() === $this) {
-                $adminPublicConversation->setAdmin(null);
-            }
-        }
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, GroupConversation>
@@ -515,6 +488,36 @@ class Profile
             // set the owning side to null (unless already changed)
             if ($groupMessage->getAuthor() === $this) {
                 $groupMessage->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, GroupMessageResponse>
+     */
+    public function getGroupMessageResponses(): Collection
+    {
+        return $this->groupMessageResponses;
+    }
+
+    public function addGroupMessageResponse(GroupMessageResponse $groupMessageResponse): static
+    {
+        if (!$this->groupMessageResponses->contains($groupMessageResponse)) {
+            $this->groupMessageResponses->add($groupMessageResponse);
+            $groupMessageResponse->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGroupMessageResponse(GroupMessageResponse $groupMessageResponse): static
+    {
+        if ($this->groupMessageResponses->removeElement($groupMessageResponse)) {
+            // set the owning side to null (unless already changed)
+            if ($groupMessageResponse->getAuthor() === $this) {
+                $groupMessageResponse->setAuthor(null);
             }
         }
 

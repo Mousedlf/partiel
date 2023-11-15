@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\GroupConversation;
 use App\Entity\GroupMessage;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,10 +36,46 @@ class GroupMessageController extends AbstractController
 
             return $this->json("message sent", 200);
         }
-
-        // Pas testé
     }
 
+    #[Route('/{convId}/delete/{messageId}', methods:['DELETE'])]
+    public function deleteMessage(
+        #[MapEntity(id: 'convId')] GroupConversation $groupConversation,
+        #[MapEntity(id: 'messageId')] GroupMessage $message,
+        EntityManagerInterface $manager): Response
+    {
+        //autres verifications ?
+
+        if($message->getAuthor() != $this->getUser()->getProfile()){
+            return $this->json("not yours to delete", 401);
+        }
+
+        $manager->remove($message);
+        $manager->flush();
+
+        return $this->json("message deleted", 200);
+    }
+
+    #[Route('/{convId}/edit/{messageId}', methods:['PUT'])]
+    public function editMessage(
+        #[MapEntity(id: 'convId')] GroupConversation $groupConversation,
+        #[MapEntity(id: 'messageId')] GroupMessage $message,
+        EntityManagerInterface $manager,Request $request, SerializerInterface $serializer): Response
+    {
+        //autres verifications ?
+
+        if($message->getAuthor() != $this->getUser()->getProfile()){
+            return $this->json("not yours to change", 401);
+        }
+
+        $editedMessage =$serializer->deserialize($request->getContent(), GroupMessage::class, 'json');
+        $message->setContent($editedMessage->getContent());
+
+        $manager->persist($message);
+        $manager->flush();
+
+        return $this->json("message edited", 200);
+    }
 
 
 }

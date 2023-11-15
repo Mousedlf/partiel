@@ -32,6 +32,7 @@ class GroupConversation
     private Collection $members;
 
     #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: GroupMessage::class)]
+    #[Groups(['show_privateConvMsgs'])]
     private Collection $messages;
 
     public function __construct()

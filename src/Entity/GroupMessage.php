@@ -39,9 +39,14 @@ class GroupMessage
     #[Groups(['show_privateConvMsgs'])]
     private Collection $groupMessageResponses;
 
+    #[ORM\ManyToMany(targetEntity: Reaction::class)]
+    #[Groups(['show_privateConvMsgs'])]
+    private Collection $reactions;
+
     public function __construct()
     {
         $this->groupMessageResponses = new ArrayCollection();
+        $this->reactions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -123,6 +128,30 @@ class GroupMessage
                 $groupMessageResponse->setGroupMessage(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Reaction>
+     */
+    public function getReactions(): Collection
+    {
+        return $this->reactions;
+    }
+
+    public function addReaction(Reaction $reaction): static
+    {
+        if (!$this->reactions->contains($reaction)) {
+            $this->reactions->add($reaction);
+        }
+
+        return $this;
+    }
+
+    public function removeReaction(Reaction $reaction): static
+    {
+        $this->reactions->removeElement($reaction);
 
         return $this;
     }

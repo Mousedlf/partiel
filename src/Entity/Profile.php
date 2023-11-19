@@ -19,7 +19,7 @@ class Profile
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['sentBy','show_privateConvMsgs', 'show_requests', "show_profiles", "show_friends", 'show_privateConversations', 'show_privateConversationMessages',"show_receivedRequests", 'show_groupConv'])]
+    #[Groups(['sentBy','show_privateConvMsgs','show_privateConvMsgs', 'show_privateConversationMessages', 'show_MyPrivateConversations', 'show_requests', "show_profiles", "show_friends", 'show_privateConversations', 'show_privateConversationMessages',"show_receivedRequests", 'show_groupConv'])]
     private ?string $username = null;
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
@@ -69,7 +69,6 @@ class Profile
     #[ORM\OneToMany(mappedBy: 'createdBy', targetEntity: GroupConversation::class)]
     private Collection $createdPublicConversations;
 
-
     #[ORM\ManyToMany(targetEntity: GroupConversation::class, mappedBy: 'members')]
     private Collection $groupConversations;
 
@@ -78,6 +77,9 @@ class Profile
 
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: GroupMessageResponse::class)]
     private Collection $groupMessageResponses;
+
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Reaction::class, orphanRemoval: true)]
+    private Collection $reactions;
 
 
 
@@ -91,10 +93,10 @@ class Profile
         $this->participantBOfPrivateChat = new ArrayCollection();
         $this->sentPrivateMessages = new ArrayCollection();
         $this->createdPublicConversations = new ArrayCollection();
-        $this->publicConversations = new ArrayCollection();
         $this->groupConversations = new ArrayCollection();
         $this->groupMessages = new ArrayCollection();
         $this->groupMessageResponses = new ArrayCollection();
+        $this->reactions = new ArrayCollection();
     }
 
     public function getFriendList(){
@@ -121,13 +123,18 @@ class Profile
         return $friendList;
     }
 
-    public function getPrivateConversations(){
-        $privateConversations = [];
-        $currentProfile = $this;
+    public function getPrivateConversationIds(){
+        $privateConversationIds = [];
 
-        // lalala
+        foreach($this->participantAOfPrivateChat as $participantA){
+            $privateConversationIds[] = $participantA->getId();
+        };
 
-        return $privateConversations;
+        foreach($this->participantBOfPrivateChat as $participantB){
+            $privateConversationIds[] = $participantB->getId();
+        };
+
+        return $privateConversationIds;
     }
 
     public function getId(): ?int
@@ -518,6 +525,36 @@ class Profile
             // set the owning side to null (unless already changed)
             if ($groupMessageResponse->getAuthor() === $this) {
                 $groupMessageResponse->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Reaction>
+     */
+    public function getReactions(): Collection
+    {
+        return $this->reactions;
+    }
+
+    public function addReaction(Reaction $reaction): static
+    {
+        if (!$this->reactions->contains($reaction)) {
+            $this->reactions->add($reaction);
+            $reaction->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReaction(Reaction $reaction): static
+    {
+        if ($this->reactions->removeElement($reaction)) {
+            // set the owning side to null (unless already changed)
+            if ($reaction->getAuthor() === $this) {
+                $reaction->setAuthor(null);
             }
         }
 

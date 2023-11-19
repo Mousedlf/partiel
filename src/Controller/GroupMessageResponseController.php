@@ -61,7 +61,7 @@ class GroupMessageResponseController extends AbstractController
         return $this->json("response went *pouf*",201);
     }
 
-    #[Route('/{convId}/message/{messageId}/response/edit/{responseId}', methods: ["PUT"])]
+    #[Route('/{convId}/message/{messageId}/response/{responseId}/edit', methods: ["PUT"])]
     public function editResponseToGroupMessage(
         #[MapEntity(id: 'convId')] GroupConversation $conversation,
         #[MapEntity(id: 'messageId')] GroupMessage $message,

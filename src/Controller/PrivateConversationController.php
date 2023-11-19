@@ -19,11 +19,16 @@ class PrivateConversationController extends AbstractController
         return $this->json($privateConversations, 200,[], ['groups'=>'show_privateConversations']);
     }
 
-    #[Route('s/ofmine/{id}',  methods:['GET'])]
-    public function indexAllMyConversations(Profile $profile): Response
+    #[Route('s/{id}',  methods:['GET'])]
+    public function indexAllMyConversations(Profile $profile, PrivateConversationRepository $repository): Response
     {
-        $conversations = "faut encore ajouter la methode getPrivateConversations dans le profile";
-        // $profile->getPrivateConversations();
+//        $conversations = [];
+//        foreach($profile->getPrivateConversationIds() as $convId){
+//            $conversations[]= $repository->find(['id'=>$convId]);
+//        }
+        $conversations = $profile->getPrivateConversationIds();
+
+        //manque un truc, me trouve que 1ere conv
 
         return $this->json($conversations, 200, [],['groups'=>'show_MyPrivateConversations'] );
     }

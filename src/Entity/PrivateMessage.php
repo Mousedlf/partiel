@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PrivateMessageRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -29,9 +31,16 @@ class PrivateMessage
     #[Groups(['show_privateConversationMessages'])]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\ManyToMany(targetEntity: Reaction::class)]
     #[Groups(['show_privateConversationMessages'])]
-    private ?string $content = null;
+    private Collection $reactions;
+
+
+
+    public function __construct()
+    {
+        $this->reactions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -85,4 +94,30 @@ class PrivateMessage
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, Reaction>
+     */
+    public function getReactions(): Collection
+    {
+        return $this->reactions;
+    }
+
+    public function addReaction(Reaction $reaction): static
+    {
+        if (!$this->reactions->contains($reaction)) {
+            $this->reactions->add($reaction);
+        }
+
+        return $this;
+    }
+
+    public function removeReaction(Reaction $reaction): static
+    {
+        $this->reactions->removeElement($reaction);
+
+        return $this;
+    }
+
+
 }

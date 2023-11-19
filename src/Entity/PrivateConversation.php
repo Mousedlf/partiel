@@ -14,7 +14,7 @@ class PrivateConversation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["show_profiles", 'show_privateConversations'])]
+    #[Groups(["show_profiles", 'show_privateConversations', 'show_MyPrivateConversations'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'participantAOfPrivateChat')]
@@ -24,7 +24,7 @@ class PrivateConversation
 
     #[ORM\ManyToOne(inversedBy: 'participantBOfPrivateChat')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["show_profiles", 'show_privateConversations'])]
+    #[Groups(["show_profiles", 'show_privateConversations', 'show_MyPrivateConversations'])]
     private ?Profile $participantB = null;
 
     #[ORM\OneToMany(mappedBy: 'privateConversation', targetEntity: PrivateMessage::class)]

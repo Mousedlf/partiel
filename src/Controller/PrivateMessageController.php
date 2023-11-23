@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\PrivateConversation;
 use App\Entity\PrivateMessage;
+use App\Repository\ImageRepository;
+use App\Service\ImagePostProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +19,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 class PrivateMessageController extends AbstractController
 {
     #[Route('/message/in/{id}', methods:['POST'])]
-    public function newMessage(Request $request, SerializerInterface $serializer, EntityManagerInterface $manager, PrivateConversation $privateConversation): Response
+    public function newMessage(Request $request, ImagePostProcessor $postProcessor, SerializerInterface $serializer, EntityManagerInterface $manager, ImageRepository $imageRepository,PrivateConversation $privateConversation): Response
     {
         $json = $request->getContent();
         $message = $serializer->deserialize($json, PrivateMessage::class, 'json');
@@ -26,6 +28,22 @@ class PrivateMessageController extends AbstractController
         $message->setCreatedAt(new \DateTimeImmutable());
         $message->setPrivateConversation($privateConversation);
 
+        $potentialImageIds = $message->getAssociatedImages();
+        if($potentialImageIds){
+            $images = $postProcessor->getImagesAssociatedToGivenIds($potentialImageIds);
+
+            foreach($images as $image) {
+
+                if(!$image){
+                    return $this->json("no image associated with this id", 401);
+                }
+                if($image->getUploadedBy() !== $this->getUser()->getProfile()){
+                    return $this->json("not your uploaded image", 401);
+                }
+
+                $message->addImage($image);
+            }
+        }
 
         $manager->persist($message);
         $manager->flush();

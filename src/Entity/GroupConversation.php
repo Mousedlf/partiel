@@ -17,6 +17,10 @@ class GroupConversation
     #[Groups(['show_groupConv'])]
     private ?int $id = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['show_groupConv'])]
+    private ?string $name = null;
+
     #[ORM\ManyToOne(inversedBy: 'createdPublicConversations')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['show_groupConv'])]
@@ -34,6 +38,7 @@ class GroupConversation
     #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: GroupMessage::class)]
     #[Groups(['show_privateConvMsgs'])]
     private Collection $messages;
+
 
     public function __construct()
     {
@@ -120,6 +125,18 @@ class GroupConversation
                 $message->setConversation(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): static
+    {
+        $this->name = $name;
 
         return $this;
     }

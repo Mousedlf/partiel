@@ -27,7 +27,7 @@ class PrivateConversationRepository extends ServiceEntityRepository
 //    public function findByExampleField($value): array
 //    {
 //        return $this->createQueryBuilder('p')
-//            ->andWhere('p.exampleField = :val')
+//            ->andWhere('p.exampleField = :val') //rechercher dans createdGro
 //            ->setParameter('val', $value)
 //            ->orderBy('p.id', 'ASC')
 //            ->setMaxResults(10)

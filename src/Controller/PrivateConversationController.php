@@ -22,11 +22,10 @@ class PrivateConversationController extends AbstractController
     #[Route('s/{id}',  methods:['GET'])]
     public function indexAllMyConversations(Profile $profile, PrivateConversationRepository $repository): Response
     {
-//        $conversations = [];
-//        foreach($profile->getPrivateConversationIds() as $convId){
-//            $conversations[]= $repository->find(['id'=>$convId]);
-//        }
-        $conversations = $profile->getPrivateConversationIds();
+        $conversations = [];
+        foreach($profile->getPrivateConversationIds() as $convId){
+            $conversations[]= $repository->find(['id'=>$convId]);
+        }
 
         //manque un truc, me trouve que 1ere conv
 

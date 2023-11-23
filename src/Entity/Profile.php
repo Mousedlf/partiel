@@ -12,6 +12,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: ProfileRepository::class)]
 class Profile
 {
+
+    # Profile info  -----------------------------------------------------------------
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -22,12 +24,23 @@ class Profile
     #[Groups(['sentBy','show_privateConvMsgs','show_privateConvMsgs', 'show_privateConversationMessages', 'show_MyPrivateConversations', 'show_requests', "show_profiles", "show_friends", 'show_privateConversations', 'show_privateConversationMessages',"show_receivedRequests", 'show_groupConv'])]
     private ?string $username = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $firstName = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $lastName = null;
+
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $ofUser = null;
 
+    # Visibility
+    #[ORM\Column]
+    #[Groups(['show_profiles'])]
+    private ?bool $public = null;
 
-    # Friend Request
+
+    # Friend Request  ----------------------------------------------------------------
     #[ORM\OneToMany(mappedBy: 'ofProfile', targetEntity: FriendRequest::class)]
     #[Groups(['sentBy'])]
     private Collection $receivedFriendRequests;
@@ -36,7 +49,7 @@ class Profile
     private Collection $sentFriendRequests;
 
 
-    # Friendship
+    # Friendship --------------------------------------------------------------------
     #[ORM\OneToMany(mappedBy: 'friendA', targetEntity: Friendship::class)]
     private Collection $relationAsSender;
 
@@ -44,7 +57,7 @@ class Profile
     private Collection $relationAsRecipient;
 
 
-    # Private Chat
+    # Private Chat -----------------------------------------------------------------
     #[ORM\OneToMany(mappedBy: 'participantA', targetEntity: PrivateConversation::class)]
 
     private Collection $participantAOfPrivateChat;
@@ -52,22 +65,13 @@ class Profile
     #[ORM\OneToMany(mappedBy: 'participantB', targetEntity: PrivateConversation::class)]
     private Collection $participantBOfPrivateChat;
 
-    # Private Messages
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: PrivateMessage::class, orphanRemoval: true)]
     private Collection $sentPrivateMessages;
 
-    #[ORM\Column]
-    #[Groups(['show_profiles'])]
-    private ?bool $public = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $firstName = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $lastName = null;
-
+    # Group Conversation  -----------------------------------------------------------------
     #[ORM\OneToMany(mappedBy: 'createdBy', targetEntity: GroupConversation::class)]
-    private Collection $createdPublicConversations;
+    private Collection $createdGroupConversations;
 
     #[ORM\ManyToMany(targetEntity: GroupConversation::class, mappedBy: 'members')]
     private Collection $groupConversations;
@@ -78,8 +82,13 @@ class Profile
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: GroupMessageResponse::class)]
     private Collection $groupMessageResponses;
 
+
+    # Reaction  -----------------------------------------------------------------
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Reaction::class, orphanRemoval: true)]
     private Collection $reactions;
+
+    #[ORM\OneToMany(mappedBy: 'uploadedBy', targetEntity: Image::class)]
+    private Collection $uploadedImages;
 
 
 
@@ -92,11 +101,12 @@ class Profile
         $this->participantAOfPrivateChat = new ArrayCollection();
         $this->participantBOfPrivateChat = new ArrayCollection();
         $this->sentPrivateMessages = new ArrayCollection();
-        $this->createdPublicConversations = new ArrayCollection();
+        $this->createdGroupConversations = new ArrayCollection();
         $this->groupConversations = new ArrayCollection();
         $this->groupMessages = new ArrayCollection();
         $this->groupMessageResponses = new ArrayCollection();
         $this->reactions = new ArrayCollection();
+        $this->uploadedImages = new ArrayCollection();
     }
 
     public function getFriendList(){
@@ -127,11 +137,13 @@ class Profile
         $privateConversationIds = [];
 
         foreach($this->participantAOfPrivateChat as $participantA){
-            $privateConversationIds[] = $participantA->getId();
+            $id = $participantA->getId();
+            $privateConversationIds[] =$id;
         };
 
         foreach($this->participantBOfPrivateChat as $participantB){
-            $privateConversationIds[] = $participantB->getId();
+            $id = $participantB->getId();
+            $privateConversationIds[] =$id;
         };
 
         return $privateConversationIds;
@@ -415,27 +427,27 @@ class Profile
     /**
      * @return Collection<int, GroupConversation>
      */
-    public function getCreatedPublicConversations(): Collection
+    public function getCreatedGroupConversations(): Collection
     {
-        return $this->createdPublicConversations;
+        return $this->createdGroupConversations;
     }
 
-    public function addCreatedPublicConversation(GroupConversation $createdPublicConversation): static
+    public function addCreatedGroupConversation(GroupConversation $createdGroupConversation): static
     {
-        if (!$this->createdPublicConversations->contains($createdPublicConversation)) {
-            $this->createdPublicConversations->add($createdPublicConversation);
-            $createdPublicConversation->setCreatedBy($this);
+        if (!$this->createdGroupConversations->contains($createdGroupConversation)) {
+            $this->createdGroupConversations->add($createdGroupConversation);
+            $createdGroupConversation->setCreatedBy($this);
         }
 
         return $this;
     }
 
-    public function removeCreatedPublicConversation(GroupConversation $createdPublicConversation): static
+    public function removeCreatedGroupConversation(GroupConversation $createdGroupConversation): static
     {
-        if ($this->createdPublicConversations->removeElement($createdPublicConversation)) {
+        if ($this->createdGroupConversations->removeElement($createdGroupConversation)) {
             // set the owning side to null (unless already changed)
-            if ($createdPublicConversation->getCreatedBy() === $this) {
-                $createdPublicConversation->setCreatedBy(null);
+            if ($createdGroupConversation->getCreatedBy() === $this) {
+                $createdGroupConversation->setCreatedBy(null);
             }
         }
 
@@ -555,6 +567,36 @@ class Profile
             // set the owning side to null (unless already changed)
             if ($reaction->getAuthor() === $this) {
                 $reaction->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Image>
+     */
+    public function getUploadedImages(): Collection
+    {
+        return $this->uploadedImages;
+    }
+
+    public function addUploadedImage(Image $uploadedImage): static
+    {
+        if (!$this->uploadedImages->contains($uploadedImage)) {
+            $this->uploadedImages->add($uploadedImage);
+            $uploadedImage->setUploadedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUploadedImage(Image $uploadedImage): static
+    {
+        if ($this->uploadedImages->removeElement($uploadedImage)) {
+            // set the owning side to null (unless already changed)
+            if ($uploadedImage->getUploadedBy() === $this) {
+                $uploadedImage->setUploadedBy(null);
             }
         }
 

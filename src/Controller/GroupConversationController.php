@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('/api/group/conversation')]
 class GroupConversationController extends AbstractController
@@ -50,7 +51,7 @@ class GroupConversationController extends AbstractController
         $params = json_decode($content, true); # parameters as array
         foreach($params["members"] as $potentialProfileId){
 
-            if($$potentialProfileId == $this->getUser()->getProfile()->getId()){
+            if($potentialProfileId == $this->getUser()->getProfile()->getId()){
                 return $this->json("you are automatically included in the group", 401);
             }
 
@@ -63,11 +64,14 @@ class GroupConversationController extends AbstractController
                 foreach($friends as $friend){
                     if($profile = $friend){
                         $conversation->addMember($profile);
-                    }else{
+                    } elseif($profile->isPublic(false)) {
+                        return $this->json("you are trying to add someone is not your friend and not public", 401);
+                    } else{
                         return $this->json("you are trying to add someone who is not your friend", 401);
                     }
                 }
-            }
+        }
+
 
         if(count($conversation->getMembers()) < 2){
             return $this->json("two or more friends need to be added to create a group, otherwise it is a normal conversation genius");
@@ -77,6 +81,23 @@ class GroupConversationController extends AbstractController
         $manager->flush();
 
         return $this->json("new group created", 200);
+    }
+
+    #[Route('/{id}/edit', methods:['POST'])]
+    public function modifyGroupInfo(EntityManagerInterface $manager,Request $request, GroupConversation $conversation, SerializerInterface $serializer): Response
+    {
+        if($this->getUser()->getProfile() !== $conversation->getAdmin()){
+            return $this->json("you are not an admin. Mind your own business");
+        }
+
+        $json = $request->getContent();
+        $editedConvInfo = $serializer->deserialize($json, GroupConversation::class, 'json');
+        $conversation->setName($editedConvInfo->getName());
+
+        $manager->persist($conversation);
+        $manager->flush();
+
+        return $this->json("group info modified", 201);
     }
 
     #[Route('/delete/{id}', methods:['DELETE'])]
@@ -95,7 +116,6 @@ class GroupConversationController extends AbstractController
     #[Route('/leave/{id}', methods:['POST'])]
     public function leaveGroup(GroupConversation $conversation, EntityManagerInterface $manager): Response
     {
-
         # si l'admin quitte faire qqchose
         # $conversation->setAdmin() ; quelle personne? automatiquement 2e personne a avoir rejoint?
 

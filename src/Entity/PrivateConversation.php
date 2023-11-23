@@ -31,6 +31,8 @@ class PrivateConversation
     #[Groups(['show_privateConversationMessages'])]
     private Collection $privateMessages;
 
+#    _________________________________________________________________________________________
+
     public function __construct()
     {
         $this->privateMessages = new ArrayCollection();

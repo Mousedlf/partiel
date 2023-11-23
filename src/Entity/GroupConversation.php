@@ -39,6 +39,9 @@ class GroupConversation
     #[Groups(['show_privateConvMsgs'])]
     private Collection $messages;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $createdAt = null;
+
 
     public function __construct()
     {
@@ -137,6 +140,18 @@ class GroupConversation
     public function setName(?string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(?\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
 
         return $this;
     }

@@ -37,14 +37,14 @@ class GroupMessageResponseController extends AbstractController
 
                 $manager->persist($response);
                 $manager->flush();
-                return $this->json("probably a fascinating comment",201);
+                return $this->json("probably a fascinating comment",200);
             }
 
             return $this->json("you are not part of the gang", 401);
         }
     }
 
-    #[Route('/{convId}/message/{messageId}/response/{responseId}', methods: ["DELETE"])]
+    #[Route('/{convId}/message/{messageId}/response/{responseId}/delete', methods: ["DELETE"])]
     public function deleteResponseToGroupMessage(
         #[MapEntity(id: 'convId')] GroupConversation $conversation,
         #[MapEntity(id: 'messageId')] GroupMessage $message,
@@ -58,7 +58,7 @@ class GroupMessageResponseController extends AbstractController
 
         $manager->remove($response);
         $manager->flush();
-        return $this->json("response went *pouf*",201);
+        return $this->json("response went *pouf*",200);
     }
 
     #[Route('/{convId}/message/{messageId}/response/{responseId}/edit', methods: ["PUT"])]
@@ -78,7 +78,7 @@ class GroupMessageResponseController extends AbstractController
 
         $manager->persist($response);
         $manager->flush();
-        return $this->json("response edited",201);
+        return $this->json("response edited",200);
     }
 
 

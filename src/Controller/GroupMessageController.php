@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/api/group')]
 class GroupMessageController extends AbstractController
 {
-    #[Route('/message/in/{id}', methods:['POST'])]
+    #[Route('/message/in/{convId}', methods:['POST'])]
     public function newMessage(Request $request, SerializerInterface $serializer, EntityManagerInterface $manager, GroupConversation $conversation): Response
     {
         $members = $conversation->getMembers();

@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ORM\Entity(repositoryClass: GroupMessageRepository::class)]
 class GroupMessage
@@ -35,10 +36,15 @@ class GroupMessage
     #[ORM\JoinColumn(nullable: false)]
     private ?GroupConversation $conversation = null;
 
+
+    # RESPONSES -----------------------------------------------------------------------
     #[ORM\OneToMany(mappedBy: 'groupMessage', targetEntity: GroupMessageResponse::class, orphanRemoval: true)]
     #[Groups(['show_privateConvMsgs'])]
+    #[SerializedName('responses')]
     private Collection $groupMessageResponses;
 
+
+    # REACTION -----------------------------------------------------------------------
     #[ORM\ManyToMany(targetEntity: Reaction::class)]
     #[Groups(['show_privateConvMsgs'])]
     private Collection $reactions;

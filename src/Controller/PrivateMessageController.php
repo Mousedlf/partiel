@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route('/api/private')]
 class PrivateMessageController extends AbstractController
 {
-    #[Route('/message/in/{id}', methods:['POST'])]
+    #[Route('/message/in/{convId}', methods:['POST'])]
     public function newMessage(Request $request, ImagePostProcessor $postProcessor, SerializerInterface $serializer, EntityManagerInterface $manager, ImageRepository $imageRepository,PrivateConversation $privateConversation): Response
     {
         $json = $request->getContent();
@@ -57,8 +57,8 @@ class PrivateMessageController extends AbstractController
         #[MapEntity(id: 'messageId')] PrivateMessage $message,
         EntityManagerInterface $manager): JsonResponse
     {
-
         # verif si message existe fonctionne pas # de meme pour la conv
+
         if(!$message){
             return $this->json("trying to remove something that isn't there genius", 401);
         }

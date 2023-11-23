@@ -39,6 +39,7 @@ class ReactionController extends AbstractController
 
     }
 
+
 # PRIVATE MESSAGE --------------------------------------------------------------------------------------------
 
     #[Route('/private/conversation/{convId}/message/{messageId}/reaction/{id}')]
@@ -78,7 +79,8 @@ class ReactionController extends AbstractController
         return $this->json("not one of your reactions", 401);
     }
 
-    # GROUP MESSAGE --------------------------------------------------------------------------------------------
+
+# GROUP MESSAGE --------------------------------------------------------------------------------------------
 
     #[Route('/group/conversation/{convId}/message/{messageId}/reaction/{id}')]
     public function reactToGroupMessage(

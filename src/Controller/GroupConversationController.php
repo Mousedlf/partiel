@@ -155,7 +155,7 @@ class GroupConversationController extends AbstractController
                     $manager->persist($conversation);
                     $manager->flush();
                 }
-                return $this->json("friend or public person added to group", 200);
+                return $this->json($profile->getUsername()." added to group", 200);
             }
         }
         return $this->json("you are trying to add someone who is not your friend or public", 401);

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\PrivateConversation;
 use App\Entity\Profile;
 use App\Repository\PrivateConversationRepository;
+use App\Service\ImagePostProcessor;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -33,11 +34,14 @@ class PrivateConversationController extends AbstractController
     }
 
     #[Route('/{id}',  methods:['GET'])]
-    public function indexAllMessagesOfConversation(PrivateConversation $privateConversation): Response
+    public function indexAllMessagesOfConversation(PrivateConversation $conversation, ImagePostProcessor $postProcessor): Response
     {
         $current = $this->getUser()->getProfile();
-        if($current == $privateConversation->getParticipantA() or $current == $privateConversation->getParticipantB()){
-            $messages = $privateConversation->getPrivateMessages();
+        if($current == $conversation->getParticipantA() or $current == $conversation->getParticipantB()){
+            $messages = $conversation->getPrivateMessages();
+
+            $postProcessor->putImageThumbUrlsInPrivateMessages($conversation);
+
             return $this->json($messages, 200, [],['groups'=>'show_privateConversationMessages'] );
         }
         return $this->json("mind your own business", 401);

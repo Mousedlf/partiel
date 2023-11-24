@@ -38,15 +38,16 @@ class PrivateMessage
     #[Groups(['show_privateConversationMessages'])]
     private Collection $reactions;
 
+
     # IMAGE --------------------------------------------------------------------------
     private ?array $associatedImages = null;
 
     #[ORM\OneToMany(mappedBy: 'privateMessage', targetEntity: Image::class)]
     private Collection $images;
 
+    #[Groups(['show_privateConversationMessages'])]
     #[SerializedName('images')]
-    private ?array $imageUrls;
-
+    private ArrayCollection $imageUrls;
 
 
     public function __construct()
@@ -171,6 +172,17 @@ class PrivateMessage
     public function setAssociatedImages(?array $associatedImages): void
     {
         $this->associatedImages = $associatedImages;
+    }
+
+
+    public function getImageUrls(): ArrayCollection
+    {
+        return $this->imageUrls;
+    }
+
+    public function setImageUrls(ArrayCollection $imageUrls): void
+    {
+        $this->imageUrls = $imageUrls;
     }
 
 }

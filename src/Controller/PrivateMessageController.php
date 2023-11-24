@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route('/api/private')]
 class PrivateMessageController extends AbstractController
 {
-    #[Route('/message/in/{convId}', methods:['POST'])]
+    #[Route('/message/in/{id}', methods:['POST'])]
     public function newMessage(Request $request, ImagePostProcessor $postProcessor, SerializerInterface $serializer, EntityManagerInterface $manager, ImageRepository $imageRepository,PrivateConversation $privateConversation): Response
     {
         $json = $request->getContent();
@@ -33,14 +33,12 @@ class PrivateMessageController extends AbstractController
             $images = $postProcessor->getImagesAssociatedToGivenIds($potentialImageIds);
 
             foreach($images as $image) {
-
                 if(!$image){
                     return $this->json("no image associated with this id", 401);
                 }
                 if($image->getUploadedBy() !== $this->getUser()->getProfile()){
                     return $this->json("not your uploaded image", 401);
                 }
-
                 $message->addImage($image);
             }
         }

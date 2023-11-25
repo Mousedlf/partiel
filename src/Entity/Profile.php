@@ -21,7 +21,7 @@ class Profile
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['sentBy','show_privateConvMsgs','show_privateConvMsgs', 'show_privateConversationMessages', 'show_MyPrivateConversations', 'show_requests', "show_profiles", "show_friends", 'show_privateConversations', 'show_privateConversationMessages',"show_receivedRequests", 'show_groupConv'])]
+    #[Groups(['sentBy','show_communities','show_privateConvMsgs','show_privateConvMsgs', 'show_privateConversationMessages', 'show_MyPrivateConversations', 'show_requests', "show_profiles", "show_friends", 'show_privateConversations', 'show_privateConversationMessages',"show_receivedRequests", 'show_groupConv'])]
     private ?string $username = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -90,6 +90,12 @@ class Profile
     #[ORM\OneToMany(mappedBy: 'uploadedBy', targetEntity: Image::class)]
     private Collection $uploadedImages;
 
+    #[ORM\OneToMany(mappedBy: 'createdBy', targetEntity: CommunityChat::class)]
+    private Collection $createdCommunityChats;
+
+    #[ORM\ManyToMany(targetEntity: CommunityChat::class, mappedBy: 'members')]
+    private Collection $joinedCommunityChats;
+
 
 
     public function __construct()
@@ -107,6 +113,8 @@ class Profile
         $this->groupMessageResponses = new ArrayCollection();
         $this->reactions = new ArrayCollection();
         $this->uploadedImages = new ArrayCollection();
+        $this->createdCommunityChats = new ArrayCollection();
+        $this->joinedCommunityChats = new ArrayCollection();
     }
 
     public function getFriendList(){
@@ -598,6 +606,63 @@ class Profile
             if ($uploadedImage->getUploadedBy() === $this) {
                 $uploadedImage->setUploadedBy(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CommunityChat>
+     */
+    public function getCreatedCommunityChats(): Collection
+    {
+        return $this->createdCommunityChats;
+    }
+
+    public function addCreatedCommunityChat(CommunityChat $createdCommunityChat): static
+    {
+        if (!$this->createdCommunityChats->contains($createdCommunityChat)) {
+            $this->createdCommunityChats->add($createdCommunityChat);
+            $createdCommunityChat->setCreatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCreatedCommunityChat(CommunityChat $createdCommunityChat): static
+    {
+        if ($this->createdCommunityChats->removeElement($createdCommunityChat)) {
+            // set the owning side to null (unless already changed)
+            if ($createdCommunityChat->getCreatedBy() === $this) {
+                $createdCommunityChat->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CommunityChat>
+     */
+    public function getJoinedCommunityChats(): Collection
+    {
+        return $this->joinedCommunityChats;
+    }
+
+    public function addJoinedCommunityChat(CommunityChat $joinedCommunityChat): static
+    {
+        if (!$this->joinedCommunityChats->contains($joinedCommunityChat)) {
+            $this->joinedCommunityChats->add($joinedCommunityChat);
+            $joinedCommunityChat->addMember($this);
+        }
+
+        return $this;
+    }
+
+    public function removeJoinedCommunityChat(CommunityChat $joinedCommunityChat): static
+    {
+        if ($this->joinedCommunityChats->removeElement($joinedCommunityChat)) {
+            $joinedCommunityChat->removeMember($this);
         }
 
         return $this;

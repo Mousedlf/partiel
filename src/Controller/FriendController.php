@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/api')]
 class FriendController extends AbstractController
 {
-    #[Route('/{id}/friends', name: 'app_my_friends')]
+    #[Route('/{id}/friends', methods:['GET'])]
     public function indexFriends(Profile $profile): Response
     {
         $friends = $profile->getFriendList();

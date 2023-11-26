@@ -26,16 +26,19 @@ class FriendRequestController extends AbstractController
 
     }
 
-    #[Route('/receivedrequests/{id}', methods: ['GET'])]
-    public function indexMyReceivedRequests(Profile $profile): Response
+    #[Route('/request/received/{id}', methods: ['GET'])]
+    public function indexReceivedRequests(Profile $profile): Response
     {
-        $requests = $profile->getReceivedFriendRequests(); # fair
+        if($this->getUser()->getProfile() !== $profile){
+            return $this->json("none of your business", 401);
+        }
 
+        $requests = $profile->getSentFriendRequests(); # pas logique...
         return $this->json($requests,200, [],["groups"=>"show_receivedRequests"]);
 
     }
 
-    #[Route('/sendrequest/{id}', methods: ['POST'])]
+    #[Route('/request/send/{id}', methods: ['POST'])]
     public function sendFriendRequest(Profile $profile, EntityManagerInterface $manager, FriendshipRepository $friendshipRepository): Response
     {
         $request = new FriendRequest();
@@ -47,7 +50,6 @@ class FriendRequestController extends AbstractController
             return $this->json("you are sending yourself a friend request", 401);
         }
 
-        # verifier si déja dans liste d'amis
         foreach($sentBy->getFriendList() as $friend){
             if($sentTo == $friend) {
                 return $this->json("already friends");
@@ -60,6 +62,8 @@ class FriendRequestController extends AbstractController
                 return $this->json("request already sent");
             }
         }
+        #verif si lui a pas deja envoyé une demande
+        #return $this->json("other party already sent to a friend request");
 
 
 
@@ -70,7 +74,7 @@ class FriendRequestController extends AbstractController
         $manager->persist($request);
         $manager->flush();
 
-        return $this->json("friend request sent", 200 ); # revoir groups dans entités ['groups'=> '']
+        return $this->json("friend request sent to ".$request->getToProfile()->getUsername(), 200 ); # ['groups'=> '']
     }
 
     #[Route('/accept/{id}', methods: ['POST'])]
@@ -101,7 +105,7 @@ class FriendRequestController extends AbstractController
         $manager->remove($request); # demande acceptée donc plus besoin de la garder
         $manager->flush();
 
-        return $this->json("friend request accepted", 200,);
+        return $this->json($request->getOfProfile()->getUsername()."'s friend request accepted", 200,);
     }
 
     #[Route('/decline/{id}', name: 'decline_friend_request', methods: ['POST'])]
@@ -115,7 +119,7 @@ class FriendRequestController extends AbstractController
         $manager->remove($request);
         $manager->flush();
 
-        return $this->json("friend request declined", 200 );
+        return $this->json($request->getOfProfile()->getUsername()."'s friend request declined", 200 );
     }
 
     #[Route('/retract/{id}', methods: ['POST'])]

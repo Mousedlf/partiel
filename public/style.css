@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@700&family=Archivo:wght@700&family=Kalam:wght@400;700&family=Poppins:wght@400;600;700&display=swap');
+
+body{
+    font-family: 'Poppins', sans-serif;
+}
+
+h1,h2{
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+h2{
+    font-weight: 600;
+    margin-top: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+p,ul{
+    margin: 0;
+}
+

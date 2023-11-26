@@ -23,6 +23,10 @@ class PrivateConversationController extends AbstractController
     #[Route('s/{id}',  methods:['GET'])]
     public function indexAllMyConversations(Profile $profile, PrivateConversationRepository $repository): Response
     {
+//        if($profile !== $this->getUser()->getProfile()){
+//            return $this->json("none of your business", 401);
+//        }
+
         $conversations = [];
         foreach($profile->getPrivateConversationIds() as $convId){
             $conversations[]= $repository->find(['id'=>$convId]);

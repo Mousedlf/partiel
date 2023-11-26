@@ -15,14 +15,20 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route('/api/private')]
+#[Route('/api/private/conversation')]
 class PrivateMessageController extends AbstractController
 {
-    #[Route('/message/in/{id}', methods:['POST'])]
+    #[Route('/{id}/message/new', methods:['POST'])]
     public function newMessage(Request $request, ImagePostProcessor $postProcessor, SerializerInterface $serializer, EntityManagerInterface $manager, ImageRepository $imageRepository,PrivateConversation $privateConversation): Response
     {
         $json = $request->getContent();
         $message = $serializer->deserialize($json, PrivateMessage::class, 'json');
+
+        if($privateConversation->getParticipantB() !== $this->getUser()->getProfile() or $privateConversation->getParticipantA() !== $this->getUser()->getProfile()){
+            return $this->json("not one of your private conversations", 401);
+        }
+
+        //verif si bien une de tes conv
 
         $message->setAuthor($this->getUser()->getProfile());
         $message->setCreatedAt(new \DateTimeImmutable());

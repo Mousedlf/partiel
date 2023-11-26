@@ -99,7 +99,7 @@ class GroupConversationController extends AbstractController
         return $this->json("group info modified", 201);
     }
 
-    #[Route('/delete/{id}', methods:['DELETE'])]
+    #[Route('/{id}/delete', methods:['DELETE'])]
     public function deleteGroup(GroupConversation $conversation, EntityManagerInterface $manager): Response
     {
         if($this->getUser()->getProfile() !== $conversation->getAdmin()){
@@ -112,7 +112,7 @@ class GroupConversationController extends AbstractController
         return $this->json("group chat went *pouf*", 200);
     }
 
-    #[Route('/leave/{id}', methods:['POST'])]
+    #[Route('/{id}/leave', methods:['POST'])]
     public function leaveGroup(GroupConversation $conversation, EntityManagerInterface $manager): Response
     {
         # si l'admin quitte faire qqchose
@@ -134,7 +134,7 @@ class GroupConversationController extends AbstractController
     public function addToGroup(
         #[MapEntity(id: 'convId')] GroupConversation $conversation,
         #[MapEntity(id: 'profileId')] Profile $profile,
-        EntityManagerInterface $manager, ProfileRepository $profileRepository): Response
+        EntityManagerInterface $manager): Response
     {
         $currentUser = $this->getUser()->getProfile();
         if($currentUser !== $conversation->getAdmin()){

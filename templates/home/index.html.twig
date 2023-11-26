@@ -7,9 +7,24 @@
     <h1>Documentation of Symfony Messenger API</h1>
     <p>INFO: You need a token/to be logged in to access all the routes starting with /api which means all except the route to register</p>
 
+    <p>Content</p>
+    <ul>
+        <li><a href="#user">User and Token</a></li>
+        <li><a href="#profile">Profile</a></li>
+        <li><a href="#friend">Friend request</a></li>
+        <li><a href="#private">Private Conversation</a></li>
+        <li><a href="#group">Group Conversation</a></li>
+        <li><a href="#community">Community Chat</a></li>
+        <li><a href="#reaction">Reaction</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+    </ul>
+
 
 {# USER ------------------------------------------------------------------------------ #}
-    <h2 id="#user">User and Token</h2>
+    <h2 id="user">User and Token</h2>
+    <div class="col-9 mb-3">
+        <p>... décrire contenu de l'entité ...</p>
+    </div>
     <div class="card p-2 my-2">
         <div class="d-flex align-items-center mb-2">
             <div class="btn btn-primary me-4">POST</div>
@@ -17,7 +32,7 @@
             <p class="text-secondary">Sign up</p>
         </div>
         <ul>
-            <li>You need to pass username, email and password to body.
+            <li>You need to pass username, email and password to the body.
             <img src="{{ asset('images/documentation/register.png') }}" alt="">
             </li>
 
@@ -32,7 +47,7 @@
             <p class="text-secondary">Sign in and get a token</p>
         </div>
         <ul>
-            <li>You need to pass username and password to body.
+            <li>You need to pass username and password to the body.
             <img src="{{ asset('images/documentation/gettoken.png') }}" alt=""></li>
 
             <li>Based on JWT authentification. The token is valid for X (?) and can be refreshed when expired.</li>
@@ -61,16 +76,22 @@
     </div>
 
 {# PROFILE ------------------------------------------------------------------------------ #}
-    <h2 id="#profile">Profile</h2>
+    <h2 id="profile">Profile</h2>
+    <div class="col-9 mb-3">
+        <p>A profile is automatically created for each user when they register. After the registration the profile only consists of an id, username and is by default public</p>
+        <p>A first and last name can be added afterwards.</p>
+        <p class="text-danger">what can I modify? add email to profile (currently only in User)? The entity BEAUCOUP D'INFOS ET RELATIONS</p>
+    </div>
     <div class="card p-2 my-2">
         <div class="d-flex align-items-center mb-2">
             <div class="btn btn-primary me-4">POST</div>
             <p class="me-4 fw-bold">/api/profile/{profileId}/visibility</p>
             <p class="text-secondary">Change your profiles visibility</p>
         </div>
+        <p class="mb-2">Boolean property in the Profile. If the current status is 'private' it will be changed to 'public', and vice versa.</p>
         <ul>
-            <li>You need to pass the id of a profile to route.</li>
-            <li>Response (boolean):
+            <li>You need to pass the id of a profile to the route.</li>
+            <li>Response:
                 <ul>
                     <li>"Visibility changed to public/private"</li>
                 </ul>
@@ -83,8 +104,9 @@
             <p class="me-4 fw-bold">/api/{profileId}/friends</p>
             <p class="text-secondary">See the friends of a person</p>
         </div>
+        <p class="mb-2">Calls a method added to the Profile entity, which retrieves all the relationships created from accepted friend requests or when the recipient has accepted yours, and creates an array of friends.</p>
         <ul>
-            <li>You need to pass the id of a profile to route.</li>
+            <li>You need to pass the id of a profile to the route.</li>
         </ul>
     </div>
     <div class="card p-2 my-2 bg-danger-subtle">
@@ -94,12 +116,15 @@
             <p class="text-secondary">See all your private conversations</p>
         </div>
         <ul>
-            <li>You need to pass the id of your profile to route.</li>
+            <li>You need to pass the id of your profile to the route.</li>
         </ul>
     </div>
 
 {# FRIEND REQUEST ------------------------------------------------------------------------------ #}
-    <h2 id="#friend">Friend request</h2>
+    <h2 id="friend">Friend request</h2>
+    <div class="col-9 mb-3">
+        <p>The entity FriendRequest consist of a sender, a recipient and it is timestamped. When a request is accepted, an instance of Friendship (separate but linked entity) is created.</p>
+    </div>
     <div class="card p-2 my-2 bg-danger-subtle">
         <div class="d-flex align-items-center mb-2">
             <div class="btn btn-success me-4">GET</div>
@@ -107,7 +132,7 @@
             <p class="text-secondary">Index all the friend requests you received </p>
         </div>
         <ul>
-            <li>You need to pass the id of a profile to route.</li>
+            <li>You need to pass the id of a profile to the route.</li>
             <li>Response:
                 <ul>
                     <li>"None of your business" -> you are trying to see someone else's received requests. Put your id</li>
@@ -125,7 +150,7 @@
             <p class="text-secondary">Send a friend request </p>
         </div>
         <ul>
-            <li>You need to pass the id of the profile (person you want to send it to) to route.</li>
+            <li>You need to pass the id of the profile (person you want to send it to) to the route.</li>
             <li>Response:
                 <ul>
                     <li>"You are sending yourself a friend request" -> self explanatory. Change the id</li>
@@ -143,9 +168,10 @@
             <p class="me-4 fw-bold">/api/friend/accept/{requestId}</p>
             <p class="text-secondary">Accept a friend request</p>
         </div>
+        <p class="mb-2">When you accept a friend request, a Friendship (separate entity with consist of a friendA and a friendB as well as a timestamp to know when the friendship started) and a Private Conversation between you two is created.</p>
+
         <ul>
-            <li>You need to pass the id of the request you want to accept to route.</li>
-            <li>When you accept, Friendship and Private Conversation between you two is created .............</li>
+            <li>You need to pass the id of the request you want to accept to the route.</li>
             <li>Response:
                 <ul>
                     <li>"Not yours to accept" -> The request was not sent to you. Change the id</li>
@@ -160,9 +186,9 @@
             <p class="me-4 fw-bold">/api/friend/decline/{requestId}</p>
             <p class="text-secondary">Decline a friend request</p>
         </div>
+        <p class="mb-2">When it is declined, the request is deleted from the DB.</p>
         <ul>
-            <li>You need to pass the id of the request you want to decline to route.</li>
-            <li>When you decline, the request is deleted.</li>
+            <li>You need to pass the id of the request you want to decline to the route.</li>
             <li>Response:
                 <ul>
                     <li>"Mind your own business" -> The request was not sent to you. Change the id</li>
@@ -178,8 +204,7 @@
             <p class="text-secondary">Take back a sent friend request</p>
         </div>
         <ul>
-            <li>You need to pass the id of the request you want to decline to route.</li>
-            <li>When you decline, the request is deleted.</li>
+            <li>You need to pass the id of the request you want to decline to the route.</li>
             <li>Response:
                 <ul>
                     <li>"Mind your own business" -> The request was not sent by you. Change the id</li>
@@ -190,7 +215,10 @@
     </div>
 
 {# PRIVATE CONVERSATION ------------------------------------------------------------------------------ #}
-    <h2 id="#private">Private Conversation</h2>
+    <h2 id="private">Private Conversation</h2>
+    <div class="col-9 mb-3">
+        <p>A private conversation has two main entities : PrivateConversation and PrivateMessage; and they are linked to many others (Profile, Reaction, Image) .......................</p>
+    </div>
     <div class="card p-2 my-2 bg-secondary-subtle">
         <div class="d-flex align-items-center mb-2">
             <div class="btn btn-success me-4">GET</div>
@@ -198,7 +226,7 @@
             <p class="text-secondary">Index a private conversation</p>
         </div>
         <ul>
-            <li>You need to pass the id of the private conversation to route.</li>
+            <li>You need to pass the id of the private conversation to the route.</li>
             <li>Response:
                 <ul>
                     <li>"Mind your own business" -> Not one of your private conversations. Change the id</li>
@@ -216,7 +244,7 @@
             <p class="text-secondary">Write message in a private conversation of yours</p>
         </div>
         <ul>
-            <li>You need to pass the id of the private conversation to route.</li>
+            <li>You need to pass the id of the private conversation to the route.</li>
             <li>You can write text and send previously uploaded images.</li>
             <li>You need to add a content to the body. Associated images is an array of ids of previously uploaded images which can be empty.</li>
             <ul>
@@ -238,7 +266,7 @@
             <p class="text-secondary">Delete a message in a private conversation of yours</p>
         </div>
         <ul>
-            <li>You need to pass the id of the private conversation and the id of the message to route.</li>
+            <li>You need to pass the id of the private conversation and the id of the message to the route.</li>
             <li>Response:
                 <ul>
                     <li>"Not yours to delete" -> You are not the author of the message. Change the message id</li>
@@ -253,11 +281,12 @@
             <p class="me-4 fw-bold">/api/private/conversation/{id}/edit/{messageId}</p>
             <p class="text-secondary">Edit a message in a private conversation of yours</p>
         </div>
+        <p class="mb-2">Only the content (text) can be modified. The timestamp and images (if there are some linked to said message) can not be changed.</p>
         <ul>
-            <li>You need to pass the id of the private conversation and the id of the message to route.</li>
+            <li>You need to pass the id of the private conversation and the id of the message to the route.</li>
             <li>You need to add a content to the body. Images can't be edited.</li>
             <ul>
-                <li><img src="{{ asset('') }}" alt=""></li>
+                <li><img src="{{ asset('images/documentation/editprivatemsg.png') }}" alt=""></li>
             </ul>
             <li>Response:
                 <ul>
@@ -270,7 +299,10 @@
 
 
 {# GROUP CONVERSATION ------------------------------------------------------------------------------ #}
-    <h2 id="#group">Group Conversation</h2>
+    <h2 id="group">Group Conversation</h2>
+    <div class="col-9 mb-3">
+        <p>A group conversation has two main entities : GroupConversation and GroupMessage; and they are linked to many others (Profile, Reaction, Image) ..........</p>
+    </div>
     <div class="card p-2 my-2 bg-secondary-subtle">
         <div class="d-flex align-items-center mb-2 ">
             <div class="btn btn-primary me-4">GET</div>
@@ -278,7 +310,7 @@
             <p class="text-secondary">Index all messages of a group conversation.</p>
         </div>
         <ul>
-            <li>You need to pass the id of the private conversation to route.</li>
+            <li>You need to pass the id of the private conversation to the route.</li>
             <li>Response:
                 <ul>
                     <li>"You are not part of the group" -> ..... Change the id</li>
@@ -289,11 +321,109 @@
             </li>
         </ul>
     </div>
+    <div class="card p-2 my-2">
+        <div class="d-flex align-items-center mb-2 ">
+            <div class="btn btn-success me-4">POST</div>
+            <p class="me-4 fw-bold">/api/group/conversation/new</p>
+            <p class="text-secondary">Create a group conversation.</p>
+        </div>
+        <div class="mb-2">
+            <p>To create a group you must choose at least two people. To add someone the person must either be your friend or be public (visibility). A name and a description of the group can be added afterwards with another url.</p>
+            <p>When you create a group you are set as the creator, the admin and a member. It is also timestamped. <span class="text-danger">If the creator leaves, what happens to admin? he chooses replacement? second person to join?</span></p>
+        </div>
+        <ul>
+            <li>You need to pass the ids of at least 2 other profiles to the body.
+            <img src="{{ asset('images/documentation/newgroup.png') }}" alt=""></li>
+            <li>Response:
+                <ul>
+                    <li>"You are automatically included in the group" -> One of the ids is yours, change it</li>
+                    <li>"You are trying to add someone who does not exist" -> One of the ids does not match a person in the DB, change it</li>
+                    <li>"You are trying to add someone is not your friend and not public" -> Change id</li>
+                    <li>"Two or more friends need to be added to create a group, otherwise it is a normal conversation genius" -> You need to add more ids</li>
+                    <li>"New group created"</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="card p-2 my-2">
+        <div class="d-flex align-items-center mb-2 ">
+            <div class="btn btn-success me-4">POST</div>
+            <p class="me-4 fw-bold">/api/group/conversation/{id}/edit</p>
+            <p class="text-secondary">Add/Modify info of a group conversation.</p>
+        </div>
+        <div class="mb-2">
+            <p>A name and a description can be added by the admin of a group conversation. </p>
+        </div>
+        <ul>
+            <li>You can pass a name and a description to the body.
+                <img src="{{ asset('images/documentation/editgroup.png') }}" alt=""></li>
+            <li>Response:
+                <ul>
+                    <li>"You are not an admin. Mind your own business" -> self explanatory</li>
+                    <li>"Group info modified"</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="card p-2 my-2">
+        <div class="d-flex align-items-center mb-2 ">
+            <div class="btn btn-danger me-4">DELETE</div>
+            <p class="me-4 fw-bold">/api/group/conversation/{id}/delete</p>
+            <p class="text-secondary">Delete a group conversation.</p>
+        </div>
+        <p>OUI NON ?</p>
+    </div>
+    <div class="card p-2 my-2">
+        <div class="d-flex align-items-center mb-2 ">
+            <div class="btn btn-success me-4">POST</div>
+            <p class="me-4 fw-bold">/api/group/conversation/{id}/leave</p>
+            <p class="text-secondary">Leave group conversation.</p>
+        </div>
+        <div class="mb-2">
+            <p class="text-danger">what happens when admin leaves?</p>
+        </div>
+        <ul>
+            <li>You can pass the id of the conversation to the route.</li>
+            <li>Response:
+                <ul>
+                    <li>"Why are you trying to leave a group you are not part of to begin with ?" -> self explanatory, change id</li>
+                    <li>"You went *pouf*"</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="card p-2 my-2">
+        <div class="d-flex align-items-center mb-2 ">
+            <div class="btn btn-success me-4">POST</div>
+            <p class="me-4 fw-bold">/api/group/conversation/{id}/add/{profileId}</p>
+            <p class="text-secondary">Add someone to the group conversation.</p>
+        </div>
+        <div class="mb-2">
+            <p>To add someone the person must either be your friend or be public (visibility).</p>
+        </div>
+        <ul>
+            <li>You can pass the id of the conversation to the route.</li>
+            <li>Response:
+                <ul>
+                    <li>"you can not add people to this group. You are not privileged. sad" -> You have to be an admin</li>
+                    <li>"You are already in the group genius" -> self explanatory</li>
+                    <li>"Friend or public person already in group" -> self explanatory</li>
+                    <li>"You are trying to add someone who is not your friend or public" -> self explanatory, change id</li>
+                    <li>"[username] added to group"</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
 
 {# COMMUNITY CHAT ------------------------------------------------------------------------------ #}
-    <h2 id="#community">Community Channel</h2>
+    <h2 id="community">Community Channel</h2>
 
-    <h2 id="#dashboard">Dashboard</h2>
+
+{# REACTIONS ------------------------------------------------------------------------------ #}
+    <h2 id="reaction">Reactions</h2>
+
+{# DASHBOARD  ------------------------------------------------------------------------------ #}
+    <h2 id="dashboard">Dashboard</h2>
     <p class="col-9">This part is purely to visualize if stuff worked. You are not supposed to see all the things that don't concern you. Could be used for KPI stuff ........................</p>
     <div class="card p-2 my-2">
         <div class="d-flex align-items-center mb-2">
@@ -324,6 +454,18 @@
             <div class="btn btn-success me-4">GET</div>
             <p class="me-4 fw-bold">/api/private/conversations</p>
             <p class="text-secondary">Index all private conversation pairs</p>
+        </div>
+        <ul>
+            <li>Response:
+                <img src="{{ asset('') }}" alt="">
+            </li>
+        </ul>
+    </div>
+    <div class="card p-2 my-2">
+        <div class="d-flex align-items-center mb-2">
+            <div class="btn btn-success me-4">GET</div>
+            <p class="me-4 fw-bold">/api/group/conversations</p>
+            <p class="text-secondary">Index all members and info of group conversation</p>
         </div>
         <ul>
             <li>Response:

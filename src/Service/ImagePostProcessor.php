@@ -52,9 +52,7 @@ class ImagePostProcessor
     }
 
     public function getImageThumbUrl($image){
-
-        $imageUrl = $this->cacheManager->generateUrl($this->helper->asset($image), 'mini');
-        return $imageUrl;
+        return $this->cacheManager->generateUrl($this->helper->asset($image), 'mini');
     }
 
 

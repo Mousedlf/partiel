@@ -56,7 +56,7 @@ class ReactionController extends AbstractController
             $message->addReaction($reaction);
             $manager->persist($message);
             $manager->flush();
-            return $this->json("reaction added to message", 201);
+            return $this->json("reaction added to message", 200);
         }
 
         return $this->json("not one of your private conversations", 401);
@@ -99,7 +99,7 @@ class ReactionController extends AbstractController
             return $this->json("reaction added to message", 201);
         }
 
-        return $this->json("you are not part of the group conversations", 401);
+        return $this->json("you are not part of the group conversation", 401);
     }
 
     #[Route('/group/conversation/{convId}/message/{messageId}/reaction/{id}/remove')]

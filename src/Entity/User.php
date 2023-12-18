@@ -36,8 +36,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['createUser'])]
     private ?string $password = null;
 
-    #[ORM\OneToOne(mappedBy: 'ofUser', cascade: ['persist', 'remove'])]
-    private ?Profile $profile = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -115,22 +113,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
-    public function getProfile(): ?Profile
-    {
-        return $this->profile;
-    }
-
-    public function setProfile(Profile $profile): static
-    {
-        // set the owning side of the relation if necessary
-        if ($profile->getOfUser() !== $this) {
-            $profile->setOfUser($this);
-        }
-
-        $this->profile = $profile;
-
-        return $this;
-    }
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {

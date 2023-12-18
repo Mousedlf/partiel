@@ -38,13 +38,10 @@ class RegistrationController extends AbstractController
             if (!$taken){
 
                 # creer un profile lors création user et mettre par default name = username
-                $user->setProfile(new Profile());
-                $profile = $user->getProfile();
-                $profile->setUsername($user->getUsername());
-                $profile->setPublic(true);
 
                 $manager->persist($user);
                 $manager->flush();
+
 
                 return $this->json("welcome", 200);
             } else {

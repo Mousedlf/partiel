@@ -43,6 +43,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::TEXT)]
     private ?string $email = null;
 
+    #[ORM\OneToOne(mappedBy: 'ofUser', cascade: ['persist', 'remove'])]
+    private ?Profile $profile = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -134,6 +137,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getProfile(): ?Profile
+    {
+        return $this->profile;
+    }
+
+    public function setProfile(Profile $profile): static
+    {
+        // set the owning side of the relation if necessary
+        if ($profile->getOfUser() !== $this) {
+            $profile->setOfUser($this);
+        }
+
+        $this->profile = $profile;
 
         return $this;
     }

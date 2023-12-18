@@ -22,8 +22,6 @@ class RegistrationController extends AbstractController
         $json = $request->getContent();
         $user = $serializer->deserialize($json, User::class, 'json');
 
-        # if password
-        # if username
 
         // encode the plain password
         $user->setPassword(
@@ -37,13 +35,14 @@ class RegistrationController extends AbstractController
         $taken = $userRepository->findOneBy(['username'=> $user->getUsername()]);
             if (!$taken){
 
-                # creer un profile lors création user et mettre par default name = username
+                $user->setProfile(new Profile());
+                $profile = $user->getProfile();
+                $profile->setUsername($user->getUsername());
 
                 $manager->persist($user);
                 $manager->flush();
 
-
-                return $this->json("welcome", 200);
+                return $this->json("welcome ".$user->getUsername(), 200);
             } else {
                 return $this->json("username taken", 401);
             }

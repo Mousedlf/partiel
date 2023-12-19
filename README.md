@@ -59,9 +59,10 @@
    </li>
 
 <br>
+<br>
    <p>routes fonctionnelles mais pas sur la version en ligne</p>
-      <li><strong> <div class="btn btn-success">GET</div> /api/private/event/{eventId}/admins </strong>: Index all admins of an event</li>
-   <li><strong> <div class="btn btn-primary">POST</div> /api/private/event/{eventId}/admin/promote </strong>: Promote participants to admins
+      <li><strong> GET /api/private/event/{eventId}/admins </strong>: Index all admins of an event</li>
+   <li>POST/api/private/event/{eventId}/admin/promote </strong>: Promote participants to admins
       <ul>
          <li>Body: admins (array of profile Ids)</li>
       </ul>

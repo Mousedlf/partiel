@@ -57,7 +57,6 @@
          <li>Body: name</li>
       </ul>
    </li>
-   <li><strong><u>GET</u> /api/private/event/{eventId}/invitations </strong>: Index all invited people</li>
 
 
 </ul>

@@ -9,6 +9,7 @@ use App\Repository\ProfileRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use phpDocumentor\Reflection\Types\This;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -34,6 +35,23 @@ class InvitationController extends AbstractController
         return $this->json("you can only see your own invites", 401);
     }
 
+    #[Route('/private/event/{id}/invitations', methods: ['GET'])]
+    public function indexAllSentInvites(Event $event): Response
+    {
+        $currentUser = $this->getUser()->getProfile();
+        $invites = $event->getSentInvitations();
+
+        foreach($invites as $invite){
+            if($currentUser == $invite->getToProfile() or $currentUser == $event->getOrganiser()){
+                return $this->json($invites, 200, [], ['groups'=>'event-invitations:read']);
+
+            }
+        }
+
+        return $this->json("only invited people can see the full list of invitations to the event");
+
+    }
+
     #[Route('/event/{id}/invite', methods: ['POST'])]
     public function sendInvites(Event $event, Request $request, ProfileRepository $profileRepository, EntityManagerInterface $manager): Response
     {
@@ -49,6 +67,7 @@ class InvitationController extends AbstractController
 
         $content = $request->getContent();
         $params = json_decode($content, true); # parameters as array ; id of people you want to invite
+
         foreach($params["invitations"] as $potentialProfileId){
 
             if($potentialProfileId == $currentUser->getId()){
@@ -64,7 +83,11 @@ class InvitationController extends AbstractController
                 return $this->json("you are trying to invite someone who already attends the event", 401);
             }
 
-            // invitation already sent
+            foreach($event->getSentInvitations() as $invite){
+                if($invite->getToProfile()->getId() == $potentialProfileId){
+                    return $this->json("you already sent ".$potentialProfileId. " an invite", 401);
+                }
+            }
 
             // autres verifs possibles
 
@@ -75,21 +98,22 @@ class InvitationController extends AbstractController
             $manager->persist($invitation);
             $manager->flush();
 
-            return $this->json("invitation(s) sent", 200);
-
         }
+
+        return $this->json("invitation(s) sent", 200);
     }
 
 
-    #[Route('/invite/{inviteId}/accept')]
-    public function acceptInvite(Invitation $invitation, EntityManagerInterface $manager) // PAS TESTE
+    #[Route('/invite/{id}/accept', methods: ['POST'])]
+    public function acceptInvite(Invitation $invitation, EntityManagerInterface $manager)
     {
         $currentUser= $this->getUser()->getProfile();
 
-        if($currentUser == $invitation->getToProfile()->getProfile())
+        if($currentUser != $invitation->getToProfile()){
+            return $this->json("not yours to accept", 401);
+        }
 
         $event = $invitation->getToEvent();
-        $event->addParticipant($currentUser);
         $startOfEvent= $event->getFirstDay();
 
         if($startOfEvent < new \DateTime() or $event->isCanceled()){
@@ -98,12 +122,56 @@ class InvitationController extends AbstractController
             return $this->json("event has already started or was canceled. Invite is not valid anymore and was deleted", 401);
         }
 
-        // ajout a attendingEvents
+        $event->addParticipant($currentUser);
+        $invitation->setStatus("accepted");
+
+
+        $manager->persist($event);
+//        $manager->remove($invitation);
+        $manager->flush();
+
+        return $this->json("invite accepted", 200);
+
     }
 
-    #[Route('/invite/{inviteId}/refuse')]
+//    refuse an invite by ID
+    /**
+     * @param Invitation $invitation
+     * @param EntityManagerInterface $manager
+     * @return JsonResponse
+     */
+    #[Route('/invite/{id}/refuse')]
     public function refuseInvite(Invitation $invitation, EntityManagerInterface $manager)
     {
+        $currentUser= $this->getUser()->getProfile();
+
+        if($currentUser != $invitation->getToProfile()){
+            return $this->json("not yours to refuse", 401);
+        }
+
+        $event = $invitation->getToEvent();
+        $startOfEvent= $event->getFirstDay();
+
+        if($startOfEvent < new \DateTime() or $event->isCanceled()){
+            $manager->remove($invitation);
+            $manager->flush();
+            return $this->json("event has already started or was canceled. Invite is not valid anymore anyway and was deleted", 401);
+        }
+
+        $invitation->setStatus("refused");
+
+        $manager->persist($event);
+       // $manager->remove($invitation);
+        $manager->flush();
+
+        return $this->json("invite refused", 200);
+
 
     }
+
+
+
+
+
+
 }

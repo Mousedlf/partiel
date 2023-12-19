@@ -3,9 +3,12 @@
 namespace App\Entity;
 
 use App\Repository\EventRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
 class Event
@@ -13,7 +16,7 @@ class Event
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['events:read'])]
+    #[Groups(['events:read', 'profile-invitations:read', 'event-attending:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -21,12 +24,12 @@ class Event
     private ?string $location = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['events:read'])]
+    #[Groups(['events:read', 'profile-invitations:read', 'event-attending:read'])]
     private ?string $description = null;
 
     #[ORM\ManyToOne(inversedBy: 'organizedEvents')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['events:read'])]
+    #[Groups(['events:read', 'profile-invitations:read', 'event-attending:read'])]
     private ?Profile $organiser = null;
 
     #[ORM\Column]
@@ -36,6 +39,41 @@ class Event
     #[ORM\Column]
     #[Groups(['events:read'])]
     private ?bool $locationPublic = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['events:read', 'event-attending:read'])]
+    private ?\DateTimeInterface $firstDay = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['events:read', 'event-attending:read'])]
+    private ?\DateTimeInterface $lastDay = null;
+
+    #[ORM\ManyToMany(targetEntity: Profile::class, inversedBy: 'attendingEvents')]
+    #[Groups(['event-participants:read'])]
+    private Collection $participants;
+
+    #[ORM\OneToMany(mappedBy: 'toEvent', targetEntity: Invitation::class, orphanRemoval: true)]
+    #[Groups(['event-invitations:read'])]
+    private Collection $sentInvitations;
+
+    #[ORM\Column]
+    private ?bool $canceled = null;
+
+    #[ORM\OneToMany(mappedBy: 'toEvent', targetEntity: Contribution::class, orphanRemoval: true)]
+    private Collection $contributions;
+
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Suggestion::class, orphanRemoval: true)]
+    private Collection $suggestions;
+
+
+    public function __construct()
+    {
+        $this->participants = new ArrayCollection();
+        $this->sentInvitations = new ArrayCollection();
+        $this->contributions = new ArrayCollection();
+        $this->suggestions = new ArrayCollection();
+    }
+
 
     public function getId(): ?int
     {
@@ -101,4 +139,156 @@ class Event
 
         return $this;
     }
+
+    public function getFirstDay(): ?\DateTimeInterface
+    {
+        return $this->firstDay;
+    }
+
+    public function setFirstDay(\DateTimeInterface $firstDay): static
+    {
+        $this->firstDay = $firstDay;
+
+        return $this;
+    }
+
+    public function getLastDay(): ?\DateTimeInterface
+    {
+        return $this->lastDay;
+    }
+
+    public function setLastDay(\DateTimeInterface $lastDay): static
+    {
+        $this->lastDay = $lastDay;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Profile>
+     */
+    public function getParticipants(): Collection
+    {
+        return $this->participants;
+    }
+
+    public function addParticipant(Profile $participant): static
+    {
+        if (!$this->participants->contains($participant)) {
+            $this->participants->add($participant);
+        }
+
+        return $this;
+    }
+
+    public function removeParticipant(Profile $participant): static
+    {
+        $this->participants->removeElement($participant);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Invitation>
+     */
+    public function getSentInvitations(): Collection
+    {
+        return $this->sentInvitations;
+    }
+
+    public function addSentInvitation(Invitation $sentInvitation): static
+    {
+        if (!$this->sentInvitations->contains($sentInvitation)) {
+            $this->sentInvitations->add($sentInvitation);
+            $sentInvitation->setToEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSentInvitation(Invitation $sentInvitation): static
+    {
+        if ($this->sentInvitations->removeElement($sentInvitation)) {
+            // set the owning side to null (unless already changed)
+            if ($sentInvitation->getToEvent() === $this) {
+                $sentInvitation->setToEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function isCanceled(): ?bool
+    {
+        return $this->canceled;
+    }
+
+    public function setCanceled(bool $canceled): static
+    {
+        $this->canceled = $canceled;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Contribution>
+     */
+    public function getContributions(): Collection
+    {
+        return $this->contributions;
+    }
+
+    public function addContribution(Contribution $contribution): static
+    {
+        if (!$this->contributions->contains($contribution)) {
+            $this->contributions->add($contribution);
+            $contribution->setToEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeContribution(Contribution $contribution): static
+    {
+        if ($this->contributions->removeElement($contribution)) {
+            // set the owning side to null (unless already changed)
+            if ($contribution->getToEvent() === $this) {
+                $contribution->setToEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Suggestion>
+     */
+    public function getSuggestions(): Collection
+    {
+        return $this->suggestions;
+    }
+
+    public function addSuggestion(Suggestion $suggestion): static
+    {
+        if (!$this->suggestions->contains($suggestion)) {
+            $this->suggestions->add($suggestion);
+            $suggestion->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSuggestion(Suggestion $suggestion): static
+    {
+        if ($this->suggestions->removeElement($suggestion)) {
+            // set the owning side to null (unless already changed)
+            if ($suggestion->getEvent() === $this) {
+                $suggestion->setEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
+
 }

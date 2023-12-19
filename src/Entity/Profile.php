@@ -14,6 +14,7 @@ class Profile
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['profiles:read'])]
     private ?int $id = null;
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
@@ -21,15 +22,46 @@ class Profile
     private ?User $ofUser = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['profiles:read', 'events:read'])]
+    #[Groups(['profiles:read', 'events:read', 'event-participants:read', 'event-invitations:read', 'profile-invitations:read', 'event-attending:read', 'contributions:read', 'suggestions:read'])]
     private ?string $username = null;
 
+
+//    EVENTS
     #[ORM\OneToMany(mappedBy: 'organiser', targetEntity: Event::class, orphanRemoval: true)]
     private Collection $organizedEvents;
+
+    #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'participants')]
+    private Collection $attendingEvents;
+
+
+//    INVITATIONS
+    #[ORM\OneToMany(mappedBy: 'toProfile', targetEntity: Invitation::class, orphanRemoval: true)]
+    private Collection $receivedInvitations;
+
+    #[ORM\OneToMany(mappedBy: 'createdBy', targetEntity: Contribution::class)]
+    private Collection $contributionsPrivateEvent;
+
+
+//    SUGGESTIONS
+    #[ORM\OneToMany(mappedBy: 'createdBy', targetEntity: Suggestion::class, orphanRemoval: true)]
+    private Collection $suggestionsPrivateEvent;
+
+    #[ORM\OneToMany(mappedBy: 'takenBy', targetEntity: Suggestion::class)]
+    private Collection $takenSuggestions;
+
+    #[ORM\OneToMany(mappedBy: 'handledSuggestionBy', targetEntity: Contribution::class)]
+    private Collection $handledSuggestions;
+
 
     public function __construct()
     {
         $this->organizedEvents = new ArrayCollection();
+        $this->attendingEvents = new ArrayCollection();
+        $this->receivedInvitations = new ArrayCollection();
+        $this->contributionsPrivateEvent = new ArrayCollection();
+        $this->suggestionsPrivateEvent = new ArrayCollection();
+        $this->takenSuggestions = new ArrayCollection();
+        $this->handledSuggestions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -85,6 +117,183 @@ class Profile
             // set the owning side to null (unless already changed)
             if ($organizedEvent->getOrganiser() === $this) {
                 $organizedEvent->setOrganiser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getAttendingEvents(): Collection
+    {
+        return $this->attendingEvents;
+    }
+
+    public function addAttendingEvent(Event $attendingEvent): static
+    {
+        if (!$this->attendingEvents->contains($attendingEvent)) {
+            $this->attendingEvents->add($attendingEvent);
+            $attendingEvent->addParticipant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttendingEvent(Event $attendingEvent): static
+    {
+        if ($this->attendingEvents->removeElement($attendingEvent)) {
+            $attendingEvent->removeParticipant($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Invitation>
+     */
+    public function getReceivedInvitations(): Collection
+    {
+        return $this->receivedInvitations;
+    }
+
+    public function addReceivedInvitation(Invitation $receivedInvitation): static
+    {
+        if (!$this->receivedInvitations->contains($receivedInvitation)) {
+            $this->receivedInvitations->add($receivedInvitation);
+            $receivedInvitation->setToProfile($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReceivedInvitation(Invitation $receivedInvitation): static
+    {
+        if ($this->receivedInvitations->removeElement($receivedInvitation)) {
+            // set the owning side to null (unless already changed)
+            if ($receivedInvitation->getToProfile() === $this) {
+                $receivedInvitation->setToProfile(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Contribution>
+     */
+    public function getContributionsPrivateEvent(): Collection
+    {
+        return $this->contributionsPrivateEvent;
+    }
+
+    public function addContributionsPrivateEvent(Contribution $contributionsPrivateEvent): static
+    {
+        if (!$this->contributionsPrivateEvent->contains($contributionsPrivateEvent)) {
+            $this->contributionsPrivateEvent->add($contributionsPrivateEvent);
+            $contributionsPrivateEvent->setCreatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeContributionsPrivateEvent(Contribution $contributionsPrivateEvent): static
+    {
+        if ($this->contributionsPrivateEvent->removeElement($contributionsPrivateEvent)) {
+            // set the owning side to null (unless already changed)
+            if ($contributionsPrivateEvent->getCreatedBy() === $this) {
+                $contributionsPrivateEvent->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Suggestion>
+     */
+    public function getSuggestionsPrivateEvent(): Collection
+    {
+        return $this->suggestionsPrivateEvent;
+    }
+
+    public function addSuggestionsPrivateEvent(Suggestion $suggestionsPrivateEvent): static
+    {
+        if (!$this->suggestionsPrivateEvent->contains($suggestionsPrivateEvent)) {
+            $this->suggestionsPrivateEvent->add($suggestionsPrivateEvent);
+            $suggestionsPrivateEvent->setCreatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSuggestionsPrivateEvent(Suggestion $suggestionsPrivateEvent): static
+    {
+        if ($this->suggestionsPrivateEvent->removeElement($suggestionsPrivateEvent)) {
+            // set the owning side to null (unless already changed)
+            if ($suggestionsPrivateEvent->getCreatedBy() === $this) {
+                $suggestionsPrivateEvent->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Suggestion>
+     */
+    public function getTakenSuggestions(): Collection
+    {
+        return $this->takenSuggestions;
+    }
+
+    public function addTakenSuggestion(Suggestion $takenSuggestion): static
+    {
+        if (!$this->takenSuggestions->contains($takenSuggestion)) {
+            $this->takenSuggestions->add($takenSuggestion);
+            $takenSuggestion->setTakenBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTakenSuggestion(Suggestion $takenSuggestion): static
+    {
+        if ($this->takenSuggestions->removeElement($takenSuggestion)) {
+            // set the owning side to null (unless already changed)
+            if ($takenSuggestion->getTakenBy() === $this) {
+                $takenSuggestion->setTakenBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Contribution>
+     */
+    public function getHandledSuggestions(): Collection
+    {
+        return $this->handledSuggestions;
+    }
+
+    public function addHandledSuggestion(Contribution $handledSuggestion): static
+    {
+        if (!$this->handledSuggestions->contains($handledSuggestion)) {
+            $this->handledSuggestions->add($handledSuggestion);
+            $handledSuggestion->setHandledSuggestionBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHandledSuggestion(Contribution $handledSuggestion): static
+    {
+        if ($this->handledSuggestions->removeElement($handledSuggestion)) {
+            // set the owning side to null (unless already changed)
+            if ($handledSuggestion->getHandledSuggestionBy() === $this) {
+                $handledSuggestion->setHandledSuggestionBy(null);
             }
         }
 

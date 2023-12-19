@@ -15,18 +15,21 @@ use Symfony\Component\Serializer\SerializerInterface;
 class ContributionController extends AbstractController
 {
     #[Route('/{id}/contributions', methods:['GET'])]
-    public function indexAllContributionsAndSuggestions(): Response
+    public function indexAllContributions(Event $event): Response
     {
-
+        $contributions = $event->getContributions();
+        return $this->json($contributions, 200, [], ['groups'=>'contributions:read']);
     }
 
 
-    #[Route('/{id}/contribution/add', methods: ['PUT'])]
+    #[Route('/{id}/contribution/add', methods: ['POST'])]
     public function addContribution(SerializerInterface $serializer, Request $request, Event $event, EntityManagerInterface $manager): Response
     {
         $currentUser = $this->getUser()->getProfile();
 
-        // si invité et invitation acceptée
+        if(!$event->getParticipants()->contains($currentUser)){
+            return $this->json("you are not a participant of this event. Thanks for wanting to contribute but I can not accept");
+        }
 
         if(!$event->isPublic() && !$event->isLocationPublic()){
 
@@ -38,6 +41,7 @@ class ContributionController extends AbstractController
             $contribution->setName($data->getName());
             $contribution->setToEvent($event);
             $contribution->setCreatedBy($currentUser);
+            $contribution->setQuantity($data->getQuantity());
 
             $manager->persist($contribution);
             $manager->flush();
@@ -48,6 +52,21 @@ class ContributionController extends AbstractController
 
         return $this->json("contributions can only be made for private house events", 401);
 
+    }
+
+    #[Route('/contribution/{id}/remove', methods: ['DELETE'])]
+    public function removeContribution(Contribution $contribution, EntityManagerInterface $manager): Response
+    {
+        $currentUser = $this->getUser()->getProfile();
+
+        if($contribution->getToEvent()->getOrganiser() != $currentUser or $contribution->getCreatedBy() != $currentUser){
+            return $this->json("only the organiser or the one who created the contribution can remove it");
+        }
+
+        $manager->remove($contribution);
+        $manager->flush();
+
+        return $this->json("contribution was removed", 401);
 
     }
 

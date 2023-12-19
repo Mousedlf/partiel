@@ -22,7 +22,7 @@ class Profile
     private ?User $ofUser = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['profiles:read', 'events:read', 'event-participants:read', 'event-invitations:read', 'profile-invitations:read', 'event-attending:read', 'contributions:read', 'suggestions:read'])]
+    #[Groups(['profiles:read', 'events:read', 'event-participants:read', 'event-invitations:read', 'profile-invitations:read', 'event-attending:read', 'contributions:read', 'suggestions:read', 'event-admins:read'])]
     private ?string $username = null;
 
 
@@ -55,6 +55,9 @@ class Profile
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
     private ?Image $image = null;
 
+    #[ORM\OneToMany(mappedBy: 'profile', targetEntity: AdminPrivateEvent::class, orphanRemoval: true)]
+    private Collection $adminOfPrivateEvent;
+
 
     public function __construct()
     {
@@ -65,6 +68,7 @@ class Profile
         $this->suggestionsPrivateEvent = new ArrayCollection();
         $this->takenSuggestions = new ArrayCollection();
         $this->handledSuggestions = new ArrayCollection();
+        $this->adminOfPrivateEvent = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -311,6 +315,36 @@ class Profile
     public function setImage(?Image $image): static
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AdminPrivateEvent>
+     */
+    public function getAdminOfPrivateEvent(): Collection
+    {
+        return $this->adminOfPrivateEvent;
+    }
+
+    public function addAdminOfPrivateEvent(AdminPrivateEvent $adminOfPrivateEvent): static
+    {
+        if (!$this->adminOfPrivateEvent->contains($adminOfPrivateEvent)) {
+            $this->adminOfPrivateEvent->add($adminOfPrivateEvent);
+            $adminOfPrivateEvent->setProfile($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAdminOfPrivateEvent(AdminPrivateEvent $adminOfPrivateEvent): static
+    {
+        if ($this->adminOfPrivateEvent->removeElement($adminOfPrivateEvent)) {
+            // set the owning side to null (unless already changed)
+            if ($adminOfPrivateEvent->getProfile() === $this) {
+                $adminOfPrivateEvent->setProfile(null);
+            }
+        }
 
         return $this;
     }

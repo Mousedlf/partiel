@@ -16,7 +16,7 @@ class Event
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['events:read', 'profile-invitations:read', 'event-attending:read'])]
+    #[Groups(['events:read', 'profile-invitations:read', 'event-attending:read', 'event-admins:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -24,7 +24,7 @@ class Event
     private ?string $location = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['events:read', 'profile-invitations:read', 'event-attending:read'])]
+    #[Groups(['events:read', 'profile-invitations:read', 'event-attending:read', 'event-admins:read'])]
     private ?string $description = null;
 
     #[ORM\ManyToOne(inversedBy: 'organizedEvents')]
@@ -65,6 +65,10 @@ class Event
     #[ORM\OneToMany(mappedBy: 'event', targetEntity: Suggestion::class, orphanRemoval: true)]
     private Collection $suggestions;
 
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: AdminPrivateEvent::class)]
+    #[Groups(['event-admins:read'])]
+    private Collection $admins;
+
 
     public function __construct()
     {
@@ -72,6 +76,7 @@ class Event
         $this->sentInvitations = new ArrayCollection();
         $this->contributions = new ArrayCollection();
         $this->suggestions = new ArrayCollection();
+        $this->admins = new ArrayCollection();
     }
 
 
@@ -284,6 +289,36 @@ class Event
             // set the owning side to null (unless already changed)
             if ($suggestion->getEvent() === $this) {
                 $suggestion->setEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AdminPrivateEvent>
+     */
+    public function getAdmins(): Collection
+    {
+        return $this->admins;
+    }
+
+    public function addAdmin(AdminPrivateEvent $admin): static
+    {
+        if (!$this->admins->contains($admin)) {
+            $this->admins->add($admin);
+            $admin->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAdmin(AdminPrivateEvent $admin): static
+    {
+        if ($this->admins->removeElement($admin)) {
+            // set the owning side to null (unless already changed)
+            if ($admin->getEvent() === $this) {
+                $admin->setEvent(null);
             }
         }
 

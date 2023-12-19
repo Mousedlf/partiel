@@ -52,6 +52,9 @@ class Profile
     #[ORM\OneToMany(mappedBy: 'handledSuggestionBy', targetEntity: Contribution::class)]
     private Collection $handledSuggestions;
 
+    #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
+    private ?Image $image = null;
+
 
     public function __construct()
     {
@@ -299,4 +302,17 @@ class Profile
 
         return $this;
     }
+
+    public function getImage(): ?Image
+    {
+        return $this->image;
+    }
+
+    public function setImage(?Image $image): static
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
 }

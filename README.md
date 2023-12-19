@@ -67,7 +67,7 @@
          <li>Body: admins (array of profile Ids)</li>
       </ul>
    </li>
-
+ <li><strong> POST /api/private/event/admin/{adminId}/demote </strong>: Demote an admin</li>
 
 </ul>
 
